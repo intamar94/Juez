@@ -1,0 +1,30 @@
+{
+  "name": "juez",
+  "version": "1.0.0",
+  "description": "Juez: a dispute arbitrator for ERC-8004 agent-to-agent transactions.",
+  "main": "index.js",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/intamar94/Juez.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/intamar94/Juez/issues"
+  },
+  "homepage": "https://github.com/intamar94/Juez#readme",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@openzeppelin/contracts": "^5.6.1",
+    "@types/node": "^22.20.2",
+    "hardhat": "^2.29.1",
+    "solc": "^0.8.24",
+    "ts-node": "^10.9.2",
+    "typescript": "~5.6.0"
+  }
+}
