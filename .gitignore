@@ -1,3 +1,4 @@
 node_modules/
 cad/stl/
 .DS_Store
+.env
