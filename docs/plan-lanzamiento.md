@@ -21,11 +21,14 @@ Semana        1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16
 
 Objetivo: un corral contra la pared armado y probado en casa.
 
-- [ ] Imprimir 2 nodos de 90°, 2 de 180°, 2 anclajes y 3 tapas (`./cad/exportar.sh`)
-- [ ] Comprar 3 postes de Ø40 mm × 66 cm, 12 pernos M6 × 40 con tuerca ciega y 4 tacos de pared
-- [ ] Cortar 3 paneles (2 × 60 cm y 1 × 80 cm) en un taller CNC con los DXF
+Todo lo que hay que pedir y comprar está en [`docs/fabricacion.md`](fabricacion.md).
+
+- [ ] Encargar **un solo nodo de 90°** de prueba y comprobar el encaje con el poste y un trozo de triplex de 18 mm
+- [ ] Encargar el resto de las piezas impresas: 4 nodos de 90°, 4 anclajes y las tapas
+- [ ] Cotizar y cortar 3 paneles (2 × 60 cm y 1 × 80 cm) en un taller CNC
+- [ ] Comprar 2 postes de Ø40 mm × 67 cm, los pernos de coche M6 × 40 con tuerca ciega y los tornillos de pared
 - [ ] Armar y medir: holgura del panel en el nodo, que el poste no gire y que no queden huecos
-- [ ] Pruebas caseras: empujar el riel superior con ~10 kg, tirar del panel hacia arriba y meter un dedo en cada unión
+- [ ] Hacer las pruebas de `docs/fabricacion.md` (sección 4)
 - [ ] Anotar qué falla y ajustar `cad/nido.scad` (holgura, grosor de pared, largo del brazo)
 
 **Resultado:** fotos, lista de ajustes y segunda versión de las piezas.
@@ -34,7 +37,7 @@ Objetivo: un corral contra la pared armado y probado en casa.
 
 - [ ] Diseñar la puerta con cierre de doble acción
 - [ ] Hacer los ensayos de `docs/seguridad.md` con el prototipo v2
-- [ ] Pedir cotización a 2–3 laboratorios para EN 12227 o ASTM F406, según el país de venta
+- [ ] Pedir cotización a 2–3 laboratorios acreditados por ONAC y confirmar qué norma aplica (EN 12227, ASTM F406 o F1004)
 - [ ] Enviar muestras y corregir lo que pida el laboratorio
 
 **Resultado:** informe de ensayo aprobado.
@@ -50,8 +53,9 @@ Objetivo: un corral contra la pared armado y probado en casa.
 
 ## 4. Empresa y aspectos legales (semanas 3–7)
 
-- [ ] Constituir la empresa (o registrarte como persona natural con actividad comercial)
-- [ ] Buscar y registrar la marca "Nido" (o elegir otro nombre si está tomada)
+- [ ] Constituir una SAS en la Cámara de Comercio y sacar el RUT (o registrarte como persona natural comerciante)
+- [ ] Habilitar la facturación electrónica ante la DIAN
+- [ ] Buscar y registrar la marca "Nido" en la SIC (o elegir otro nombre si está tomada)
 - [ ] Contratar un seguro de responsabilidad civil por producto
 - [ ] Redactar términos de venta, garantía, devoluciones e instrucciones de uso con advertencias
 
@@ -60,7 +64,7 @@ Objetivo: un corral contra la pared armado y probado en casa.
 ## 5. Tienda en línea (semanas 5–8)
 
 - [ ] Convertir el configurador en tienda: diseño, carrito y pago
-- [ ] Conectar una pasarela de pago del país
+- [ ] Conectar una pasarela de pago colombiana (Wompi, Mercado Pago o ePayco)
 - [ ] Página de inicio con fotos reales del prototipo y lista de espera
 - [ ] Publicar en un dominio propio
 

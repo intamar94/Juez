@@ -7,7 +7,7 @@ include <nido.scad>
 
 estilo = "cupula";
 
-encaje = 20;   // cuánto entra en el poste
+encaje = tapa_encaje;   // cuánto entra en el poste (ver nido.scad)
 pared  = 3;
 
 module cuerpo_tapa() {

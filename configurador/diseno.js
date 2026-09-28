@@ -9,7 +9,8 @@ export const SISTEMA = {
 };
 
 // Estimaciones de costo y tiempo por pieza (USD, horas de impresión, gramos de PETG).
-// Son valores de partida para el prototipo; ajústalos con cotizaciones reales.
+// Gramos medidos sobre los STL (PETG 1,27 g/cm³, ~70 % del volumen macizo con 4 perímetros
+// y 30 % de relleno). Precios en USD de referencia: sustituir por cotizaciones reales.
 export const COSTOS = {
   panel: { 400: 28, 600: 38, 800: 48 },
   puerta: 75,
@@ -17,9 +18,9 @@ export const COSTOS = {
   pernoM6: 0.6,
   filamentoPorKg: 25,
   impresas: {
-    nodo: { gramos: 60, horas: 3.5 },
-    anclaje: { gramos: 40, horas: 2.5 },
-    tapa: { gramos: 15, horas: 1 },
+    nodo: { gramos: 120, horas: 5.5 },
+    anclaje: { gramos: 57, horas: 2.5 },
+    tapa: { gramos: 30, horas: 1.5 },
   },
 };
 

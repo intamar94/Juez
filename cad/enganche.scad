@@ -17,7 +17,7 @@ module enganche() {
             cube([g + 2 * t, enganche_ancho, enganche_prof + t]);
         translate([-g / 2, -1, -enganche_prof - 1])
             cube([g, enganche_ancho + 2, enganche_prof + 1]);
-        // tornillo de sujeción por el lado exterior del corral (x negativo = fuera)
+        // tornillo para madera de 3 mm que entra en el riel, desde fuera del corral (x negativo)
         translate([-(g / 2 + t + 1), enganche_ancho / 2, -enganche_prof / 2])
             rotate([0, 90, 0]) cylinder(d = 3.4, h = t + 2);
         // patrón M3 en la cara interior: agujeros para insertos térmicos M3

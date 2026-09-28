@@ -1,5 +1,6 @@
 // Nodo: abrazadera impresa que une el poste con 1–4 paneles.
-// Se usan dos por poste (abajo y arriba). Imprimir en PETG, 4 perímetros, 30 % relleno.
+// Se usan dos por poste (abajo y arriba). Imprimir en PETG de pie, sin soportes,
+// 4 perímetros y 30 % de relleno (~120 g y ~5,5 h cada uno).
 //
 //   angulos = [0, 90]        esquina de rectángulo
 //   angulos = [0, 120]       esquina de hexágono
@@ -33,7 +34,7 @@ module ranura_brazo() {
 
 module nodo(angs) {
     difference() {
-        hull_redondeado() union() {
+        redondear_aristas() union() {
             cylinder(r = nodo_radio_ext, h = nodo_alto);
             for (a = angs) rotate([0, 0, a]) brazo();
         }
@@ -47,16 +48,13 @@ module nodo(angs) {
     }
 }
 
-// Suaviza aristas verticales para que no haya cantos vivos.
-module hull_redondeado() {
+// Redondea todas las aristas exteriores (r = 1,5 mm) para que no haya cantos vivos.
+// La escala en z compensa la altura que añade minkowski.
+module redondear_aristas() {
     minkowski() {
-        translate([0, 0, 1.5]) resize_z() children();
+        translate([0, 0, 1.5]) scale([1, 1, (nodo_alto - 3) / nodo_alto]) children();
         sphere(r = 1.5, $fn = 16);
     }
-}
-module resize_z() {
-    // compensa la altura que añade minkowski
-    scale([1, 1, (nodo_alto - 3) / nodo_alto]) children();
 }
 
 nodo(angulos);

@@ -21,8 +21,10 @@ panel_riel_sup  = 90;
 panel_radio     = 10;   // esquinas redondeadas de los huecos
 
 // --- Poste (varilla de madera comprada, altura completa) ---
-poste_diam = 40;
-poste_alto = panel_alto + 10;
+// Sobresale del nodo superior justo lo que entra la tapa, que queda apoyada sobre el nodo.
+poste_diam  = 40;
+tapa_encaje = 20;
+poste_alto  = panel_alto + tapa_encaje;
 
 // --- Nodo / abrazadera impresa (2 por poste: arriba y abajo) ---
 holgura      = 0.4;   // tolerancia de impresión FDM
