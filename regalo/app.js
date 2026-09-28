@@ -1,250 +1,29 @@
-import { CATEGORIAS, IDEAS } from './catalogo.js';
+import { IDEAS } from './catalogo.js';
 import { abrirCheckout, iniciarCheckout, sePuedeComprar } from './checkout.js';
 import { bandera, MONEDAS, nombreMoneda, PAISES, paisDelIdioma } from './paises.js';
-import {
-  categoria, dondeComprar, enlaceCompra, hayAfiliados, ideasDe, NIVELES, PLAZOS, precioLocal, sorpresa, textoCompra, textoNivel,
-} from './tienda.js';
+import { enlaceCompra, textoCompra } from './tienda.js';
 
-const $ = (id) => document.getElementById(id);
-
-const FILTROS = [[null, 'Todo'], ...Object.entries(NIVELES).map(([id, n]) => [id, `${n.simbolo} ${n.texto}`])];
-const TIPOS = {
-  objeto: '🎁 Regalo', consumible: '🍯 Se disfruta y se acaba', experiencia: '🎟️ Plan',
-  digital: '📲 Digital', tiempo: '💛 Hecho por ti',
-};
-
-const CLAVE_REGION = 'acierto.region';
-const CLAVE_TASAS = 'acierto.tasas';
-const TASAS_URL = 'https://open.er-api.com/v6/latest/USD';
-const TASAS_VIGENCIA_MS = 12 * 60 * 60 * 1000;
-
-let filtroNivel = null;
-let ultimaSorpresa = null;
-let region = leer(CLAVE_REGION);
-let tasas = leer(CLAVE_TASAS)?.rates ?? null;
-
-function el(etiqueta, props = {}, ...hijos) {
-  const nodo = Object.assign(document.createElement(etiqueta), props);
-  nodo.append(...hijos.filter((h) => h != null));
-  return nodo;
-}
-
-function conColor(nodo, color) {
-  nodo.dataset.color = color;
-  return nodo;
-}
-
-function iniciar() {
-  pintarCategorias();
-  prepararRegion();
-  $('aviso-afiliados').hidden = !hayAfiliados();
-  $('sorprendeme').addEventListener('click', abrirSorpresa);
-  $('otra-sorpresa').addEventListener('click', pintarSorpresa);
-  $('cerrar-sorpresa').addEventListener('click', () => $('dialogo-sorpresa').close());
-  $('dialogo-sorpresa').addEventListener('click', (e) => {
-    if (e.target === e.currentTarget) e.currentTarget.close();
-  });
-  addEventListener('hashchange', () => mostrar(true));
-  mostrar(false);
-  cargarTasas();
-  // Con servidor, los productos se compran aquí mismo; sin él, siguen los enlaces a tienda.
-  iniciarCheckout(() => ({ ...regionActual(), tasas })).then((hay) => { if (hay) repintar(); });
-}
-
-// — País y moneda —
-
-function prepararRegion() {
-  const pais = $('pais');
-  const moneda = $('moneda');
-  for (const [codigo, p] of Object.entries(PAISES)) pais.append(new Option(`${bandera(codigo)} ${p.nombre}`, codigo));
-  for (const m of MONEDAS) moneda.append(new Option(`${m} · ${nombreMoneda(m)}`, m));
-  // Al cambiar de país se propone su moneda; el usuario puede elegir otra.
-  pais.addEventListener('change', () => { moneda.value = PAISES[pais.value].moneda; });
-  $('region').addEventListener('click', abrirRegion);
-  // La primera vez hay que elegir: Escape no cierra la ventana hasta tener país y moneda.
-  $('dialogo-region').addEventListener('cancel', (e) => { if (!region) e.preventDefault(); });
-  $('form-region').addEventListener('submit', () => {
-    region = { pais: pais.value, moneda: moneda.value };
-    guardar(CLAVE_REGION, region);
-    pintarRegion();
-    repintar();
-  });
-  if (region && PAISES[region.pais] && MONEDAS.includes(region.moneda)) {
-    pintarRegion();
-  } else {
-    region = null;
-    abrirRegion();
-  }
-}
-
-function regionActual() {
-  if (region) return region;
-  const pais = paisDelIdioma(navigator.languages ?? [navigator.language]);
-  return { pais, moneda: PAISES[pais].moneda };
-}
-
-function abrirRegion() {
-  const r = regionActual();
-  $('pais').value = r.pais;
-  $('moneda').value = r.moneda;
-  $('dialogo-region').showModal();
-}
-
-function pintarRegion() {
-  const r = regionActual();
-  $('region').textContent = `${bandera(r.pais)} ${r.moneda}`;
-  $('region').setAttribute('aria-label', `País: ${PAISES[r.pais].nombre}. Moneda: ${r.moneda}. Cambiar`);
-}
-
-async function cargarTasas() {
-  const guardadas = leer(CLAVE_TASAS);
-  if (guardadas && Date.now() - guardadas.fecha < TASAS_VIGENCIA_MS) return;
-  try {
-    const respuesta = await fetch(TASAS_URL);
-    const datos = await respuesta.json();
-    if (datos.result !== 'success') return;
-    tasas = datos.rates;
-    guardar(CLAVE_TASAS, { fecha: Date.now(), rates: tasas });
-    repintar();
-  } catch {
-    // Sin conexión con el servicio de cambio: se muestran los niveles ($, $$, $$$).
-  }
-}
-
-function repintar() {
-  mostrar(false);
-  if ($('dialogo-sorpresa').open && ultimaSorpresa) {
-    $('idea-sorpresa').replaceChildren(tarjeta(IDEAS.find((i) => i.id === ultimaSorpresa)));
-  }
-}
-
-function leer(clave) {
-  try {
-    return JSON.parse(localStorage.getItem(clave));
-  } catch {
-    return null;
-  }
-}
-
-function guardar(clave, valor) {
-  try {
-    localStorage.setItem(clave, JSON.stringify(valor));
-  } catch {
-    // Sin almacenamiento (modo privado): vale solo para esta visita.
-  }
-}
-
-/** El hash #c/<id> abre una categoría: así cada categoría tiene su enlace para compartir. */
-function categoriaDelHash() {
-  const m = location.hash.match(/^#c\/([\w-]+)$/);
-  return m ? categoria(m[1]) : null;
-}
-
-function pintarCategorias() {
-  const cont = $('lista-categorias');
-  for (const c of CATEGORIAS) {
-    const tarjeta = el('a', { className: 'categoria', href: `#c/${c.id}` },
-      el('span', { className: 'emoji', textContent: c.emoji }),
-      el('h3', { textContent: c.nombre }),
-      el('p', { textContent: c.lema }),
-      el('small', { textContent: `${ideasDe(c.id).length} ideas →` }),
-    );
-    cont.append(conColor(tarjeta, c.color));
-  }
-}
-
-function mostrar(desplazar) {
-  const c = categoriaDelHash();
-  $('ideas').hidden = !c;
-  if (!c) return;
-  filtroNivel = null;
-  pintarOtras(c);
-  pintarCategoria(c);
-  if (desplazar) $('ideas').scrollIntoView();
-}
-
-function pintarOtras(actual) {
-  const nav = $('otras');
-  nav.replaceChildren();
-  for (const c of CATEGORIAS) {
-    const b = el('button', { type: 'button', textContent: `${c.emoji} ${c.nombre}` });
-    if (c.id === actual.id) b.setAttribute('aria-current', 'true');
-    b.addEventListener('click', () => { location.hash = `c/${c.id}`; });
-    nav.append(conColor(b, c.color));
-  }
-  nav.querySelector('[aria-current]')?.scrollIntoView({ block: 'nearest', inline: 'center' });
-}
-
-function pintarCategoria(c) {
-  const cabeza = $('cabeza-cat');
-  cabeza.replaceChildren(
-    el('span', { className: 'emoji', textContent: c.emoji }),
-    el('h2', { textContent: c.nombre }),
-    el('p', { textContent: c.lema }),
-  );
-  conColor(cabeza, c.color);
-
-  // En la categoría barata el filtro de precio sobra.
-  if (c.id !== 'poco-dinero') {
-    const chips = el('div', { className: 'chips' });
-    for (const [valor, texto] of FILTROS) {
-      const b = el('button', { type: 'button', textContent: texto });
-      b.setAttribute('aria-pressed', String(filtroNivel === valor));
-      b.addEventListener('click', () => { filtroNivel = valor; pintarCategoria(c); });
-      chips.append(b);
-    }
-    cabeza.append(chips);
-  }
-
-  const cont = $('resultados');
-  const ideas = ideasDe(c.id, { nivel: filtroNivel });
-  cont.replaceChildren(...ideas.map(tarjeta));
-  if (!ideas.length) {
-    cont.append(el('div', { className: 'vacio', textContent: 'Nada en este nivel de precio aquí. Prueba con otro.' }));
-  }
-}
-
-function tarjeta(idea) {
-  const { pais, moneda } = regionActual();
-  const precio = precioLocal(idea, moneda, tasas, pais) ?? textoNivel(idea);
-  const esProducto = idea.tipo !== 'experiencia' && idea.tipo !== 'tiempo';
-  const patrocinado = esProducto && dondeComprar(idea, pais).comision;
-  return el('article', { className: 'idea' },
-    el('div', { className: 'arriba' },
-      el('span', { textContent: TIPOS[idea.tipo] }),
-      el('span', { textContent: `🚚 ${PLAZOS[idea.plazo]}` }),
-    ),
-    el('h3', { textContent: idea.nombre }),
-    el('p', { textContent: idea.porque }),
-    el('span', { className: 'precio', textContent: precio }),
-    botonCompra(idea, pais, patrocinado),
-  );
-}
-
-function botonCompra(idea, pais, patrocinado) {
-  if (sePuedeComprar(idea)) {
-    const boton = el('button', { type: 'button', className: 'comprar', textContent: 'Comprar aquí' });
-    boton.addEventListener('click', () => {
-      $('dialogo-sorpresa').close();
-      abrirCheckout(idea);
-    });
-    return boton;
-  }
-  return el('a', {
-    className: 'comprar', href: enlaceCompra(idea, pais), target: '_blank', rel: patrocinado ? 'sponsored noopener' : 'noopener',
-    textContent: textoCompra(idea, pais),
-  });
-}
-
-function abrirSorpresa() {
-  pintarSorpresa();
-  $('dialogo-sorpresa').showModal();
-}
-
-function pintarSorpresa() {
-  const idea = sorpresa(ultimaSorpresa);
-  ultimaSorpresa = idea.id;
-  $('idea-sorpresa').replaceChildren(tarjeta(idea));
-}
-
-iniciar();
+const $=id=>document.getElementById(id); const REGION_KEY='acierto.region'; let region=read(REGION_KEY); let tasas=null; let currentIdeas=[]; let activeFilter='all';
+const INTERESTS={cocina:['cocina','cocinar','chef','receta','gastronom'],cafe:['café','cafe','barista'],bebidas:['vino','cerveza','whisky','ron','gin'],deporte:['fútbol','futbol','tenis','golf','correr','deporte','ciclismo','escalada','yoga','fitness'],naturaleza:['montaña','senderismo','naturaleza','campo','jardín','jardin','aire libre'],viajes:['viaja','viajes','viajar','avión','avion','turismo'],lectura:['libro','leer','lectura'],musica:['música','musica','concierto','guitarra','banda'],cine:['cine','película','pelicula','series','netflix'],juegos:['juego de mesa','juegos'],videojuegos:['videojuego','gaming','playstation','xbox','nintendo'],tecnologia:['tecnología','tecnologia','programador','programación','informatica','informática','computación','ordenador','pc'],plantas:['plantas','jardín','jardin','botánica','botanica'],manualidades:['arte','pinta','dibuj','cerámica','ceramica','manualidad'],bienestar:['spa','relaj','bienestar','cuidado','autocuidado'],mascotas:['perro','gato','mascota'],moda:['moda','ropa','zapatos','sneaker'],foto:['fotografía','fotografia','cámara','camara']};
+const REL={pareja:['pareja','novio','novia','espos','esposa','marido'],familia:['madre','mamá','mama','padre','papá','papa','suegra','suegro','hermano','hermana','abuelo','abuela','hijo','hija','familia'],amistad:['amigo','amiga'],trabajo:['jefe','jefa','compañero','compañera','colega','profesor','profesora']};
+const OCC={graduacion:['graduación','graduacion','grado','se gradúa','se gradua','doctorado','tesis'],cumpleanos:['cumpleaños','cumple'],aniversario:['aniversario'],navidad:['navidad'],jubilacion:['jubilación','jubilacion','retira','retiro'],nuevoTrabajo:['nuevo trabajo','nuevo puesto','ascenso','promoción','promocion']};
+function read(k){try{return JSON.parse(localStorage.getItem(k))}catch{return null}} function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
+function init(){setupRegion();setupExamples();$('encontrar').onclick=run;$('persona').addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter')run()});$('editar').onclick=()=>{$('resultados-section').style.display='none';$('persona').focus();window.scrollTo({top:0,behavior:'smooth'})};iniciarCheckout(()=>({...regionActual(),tasas})).then(()=>renderResults())}
+function setupExamples(){document.querySelectorAll('.example').forEach(b=>b.onclick=()=>{const key=b.textContent.replace(/^\S+\s/,'');const map={'Científica que se gradúa':'Mi amiga es científica, trabaja en un laboratorio y acaba de terminar su doctorado. Le gusta la astronomía, es curiosa y ya tiene muchísimas cosas relacionadas con su trabajo.','Piloto que ya tiene de todo':'Mi hermano es piloto comercial, viaja mucho, tiene casi todo el equipo que necesita y es muy práctico. Le encanta la aviación y también salir a correr.','Amigo obsesionado con cocinar':'Mi mejor amigo tiene 34 años y está obsesionado con cocinar. Tiene una cocina muy equipada, le encanta probar recetas nuevas y descubrir ingredientes de otros países.','Pareja a distancia':'Mi pareja vive en otro país. Nos gustan los viajes, la fotografía y tenemos muchos recuerdos juntos. Quiero algo personal que nos haga sentir cerca.','Alguien difícil de regalar':'Es una persona que siempre dice que no necesita nada. Tiene de todo, es bastante minimalista y prefiere experiencias a acumular objetos.'};$('persona').value=map[key]||'';run()})}
+function setupRegion(){const p=$('pais'),m=$('moneda');Object.entries(PAISES).forEach(([c,x])=>p.append(new Option(bandera(c)+' '+x.nombre,c)));MONEDAS.forEach(x=>m.append(new Option(x+' · '+nombreMoneda(x),x)));p.onchange=()=>m.value=PAISES[p.value].moneda;$('region').onclick=openRegion;$('close-region').onclick=()=>$('dialogo-region').close();$('form-region').onsubmit=()=>{region={pais:p.value,moneda:m.value};save(REGION_KEY,region);paintRegion()};paintRegion()}
+function regionActual(){if(region&&PAISES[region.pais])return region;const pais=paisDelIdioma(navigator.languages||[navigator.language]);return{pais,moneda:PAISES[pais].moneda}} function openRegion(){const r=regionActual();$('pais').value=r.pais;$('moneda').value=r.moneda;$('dialogo-region').showModal()} function paintRegion(){const r=regionActual();$('region').textContent=bandera(r.pais)+' '+r.moneda}
+function extract(text){const t=text.toLowerCase();const p={interests:[],relations:[],occasions:[],age:null,signals:[],avoid:[],custom:false};for(const [k,w] of Object.entries(INTERESTS))if(w.some(x=>t.includes(x)))p.interests.push(k);for(const [k,w] of Object.entries(REL))if(w.some(x=>t.includes(x)))p.relations.push(k);for(const [k,w] of Object.entries(OCC))if(w.some(x=>t.includes(x)))p.occasions.push(k);const age=t.match(/\b(\d{2})\s*(?:años|anos)\b/);if(age)p.age=Number(age[1]);if(/no necesita nada|tiene de todo|ya tiene todo|difícil de regalar|dificil de regalar|minimalista/.test(t)){p.avoid.push('genéricos');p.signals.push('Tiene de todo / no necesita otro regalo genérico')}if(/práctic|practic|arreglar|taller|herramient/.test(t))p.signals.push('Le gusta hacer y arreglar cosas');if(/personal|recuerdo|emocion|sentimental|cerca|distancia/.test(t))p.signals.push('El contexto emocional importa');if(/sorpresa|original|único|unico|raro|diferente/.test(t))p.signals.push('Busca algo poco común');if(/gradu|doctorado|tesis|certific|licencia/.test(t))p.signals.push('Momento profesional importante');p.custom=/personal|nombre|foto|recuerdo|historia|fecha|ilustr|canción|cancion|vídeo|video/.test(t);return p}
+function score(i,p){let s=0;for(const x of p.interests)if((i.intereses||[]).includes(x))s+=7;for(const x of p.relations)if((i.relaciones||[]).includes(x))s+=3;if(p.age){const b=p.age<13?'nino':p.age<25?'joven':p.age<60?'adulto':'mayor';if(!i.edades||i.edades.includes(b))s+=2;else s-=5}for(const o of p.occasions)if(i.categorias&&((o==='graduacion'&&i.categorias.includes('su-obsesion'))||(o==='cumpleanos'&&i.categorias.includes('con-historia'))||(o==='aniversario'&&i.categorias.includes('con-historia'))||(o==='jubilacion'&&i.tipo==='experiencia')))s+=4;if(p.avoid.length&&['experiencia','digital','consumible','tiempo'].includes(i.tipo))s+=4;if(p.custom&&i.categorias&&i.categorias.includes('con-historia'))s+=5;return s}
+function analyze(text){const p=extract(text);currentIdeas=IDEAS.map(i=>Object.assign({},i,{_score:score(i,p)})).sort((a,b)=>b._score-a._score);return p}
+function run(){const text=$('persona').value.trim();if(text.length<12){$('persona').focus();return}const p=analyze(text);renderProfile(p);$('resultados-section').style.display='block';$('resultados-section').scrollIntoView({behavior:'smooth',block:'start'})}
+function renderProfile(p){const bits=[];if(p.age)bits.push('tiene '+p.age+' años');if(p.interests.length)bits.push('le interesa '+p.interests.slice(0,3).map(labelInterest).join(', '));if(p.avoid.length)bits.push('no necesita otro regalo genérico');$('summary').textContent=bits.length?'Por lo que cuentas, '+bits.join(', ')+'. Hemos usado ese contexto para ordenar las ideas sin hacerte más preguntas.':'Hemos extraído las señales principales y las usamos para buscar combinaciones menos obvias.';const s=$('signals');s.replaceChildren();const items=[];if(p.age)items.push('🎂 '+p.age+' años');p.interests.slice(0,5).forEach(x=>items.push('♡ '+labelInterest(x)));p.relations.forEach(x=>items.push('👥 '+x));p.occasions.forEach(x=>items.push('📅 '+x));p.signals.forEach(x=>items.push('✦ '+x));if(!items.length)items.push('🧠 Contexto convertido en señales de regalo');items.slice(0,8).forEach(x=>{const b=document.createElement('span');b.className='signal';b.textContent=x;s.append(b)});renderFilters();renderCards()}
+function labelInterest(i){return({cocina:'cocina',cafe:'café',bebidas:'bebidas',deporte:'deporte',naturaleza:'naturaleza',viajes:'viajes',lectura:'lectura',musica:'música',cine:'cine',juegos:'juegos',videojuegos:'videojuegos',tecnologia:'tecnología',plantas:'plantas',manualidades:'arte',bienestar:'bienestar',mascotas:'mascotas',moda:'moda',foto:'fotografía'})[i]||i}
+function renderFilters(){const f=$('filters');f.replaceChildren();[['all','Todo'],['personal','❤️ Más personales'],['experience','🎟️ Experiencias'],['unusual','✨ Poco comunes'],['fast','⚡ Para hoy']].forEach(([id,label])=>{const b=document.createElement('button');b.className='filter'+(activeFilter===id?' active':'');b.textContent=label;b.onclick=()=>{activeFilter=id;renderFilters();renderCards()};f.append(b)})}
+function filtered(){return currentIdeas.filter(i=>{if(activeFilter==='personal')return i.categorias&&i.categorias.includes('con-historia')||i.tipo==='tiempo';if(activeFilter==='experience')return i.tipo==='experiencia';if(activeFilter==='unusual')return i.categorias&&(i.categorias.includes('su-obsesion')||i.categorias.includes('lo-tiene-todo'));if(activeFilter==='fast')return i.plazo==='hoy';return true}).slice(0,12)}
+function renderCards(){const out=$('resultados');out.replaceChildren();const list=filtered();const groups=[['🎯 Aciertos principales',list.slice(0,3)],['✨ Otras ideas que encajan',list.slice(3,8)]];groups.forEach(g=>{if(!g[1].length)return;const sec=document.createElement('section');sec.innerHTML='<div class="section-title"><h3>'+g[0]+'</h3><span>'+g[1].length+' ideas seleccionadas</span></div><div class="cards"></div>';const cards=sec.querySelector('.cards');g[1].forEach((idea,idx)=>cards.append(card(idea,idx===0)));out.append(sec)});if(!list.length)out.innerHTML='<div class="empty">No encontramos una combinación clara con ese filtro. Prueba con “Todo”.</div>'}
+function card(i,featured){const r=regionActual();const article=document.createElement('article');article.className='card'+(featured?' featured':'');const type={objeto:'🎁 Objeto',consumible:'🍯 Consumible',experiencia:'🎟️ Experiencia',digital:'📲 Digital',tiempo:'💛 Hecho por ti'}[i.tipo]||'🎁 Regalo';const price=i.precio&&i.precio[0]===0?'Gratis / hecho por ti':currency(i.precio&&i.precio[0]||0,r.moneda)+' – '+currency(i.precio&&i.precio[1]||0,r.moneda);article.innerHTML='<div class="card-top"><span>'+type+'</span><span class="match">'+(i._score>10?'Encaja especialmente bien':'Puede encajar')+'</span></div><h4>'+esc(i.nombre)+'</h4><p>'+esc(i.porque)+'</p><div class="reason">💡 '+esc(reason(i))+'</div><div class="card-footer"><span class="price">'+price+'</span></div>';const footer=article.querySelector('.card-footer');if(sePuedeComprar(i)){const b=document.createElement('button');b.className='buy';b.textContent='Comprar aquí';b.onclick=()=>abrirCheckout(i);footer.append(b)}else if(i.tipo!=='tiempo'){const a=document.createElement('a');a.className='buy';a.href=enlaceCompra(i,r.pais);a.target='_blank';a.rel='noopener';a.textContent=textoCompra(i,r.pais);footer.append(a)}return article}
+function reason(i){if(i._score>=10)return'La hemos conectado con varias señales de tu descripción.';if(i.categorias&&i.categorias.includes('con-historia'))return'Convierte la historia entre ustedes en parte del regalo.';if(i.categorias&&i.categorias.includes('lo-tiene-todo'))return'Evita otro objeto genérico y aprovecha mejor el contexto.';return'Encaja con intereses o situaciones que aparecen en tu descripción.'}
+function currency(v,c){if(c==='USD')return'$'+v;if(c==='EUR')return'€'+v;if(c==='GBP')return'£'+Math.round(v*.86);return v+' '+c}
+function esc(s){return String(s).replace(/[&<>\"]/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','\\':'&#92;','"':'&quot;'})[c]})}
+function renderResults(){}
+init();
