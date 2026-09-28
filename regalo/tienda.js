@@ -1,4 +1,5 @@
 import { CATEGORIAS, IDEAS } from './catalogo.js';
+import { AFILIADOS, NOMBRE_TIENDA, PAIS_POR_DEFECTO, PAISES } from './paises.js';
 
 export const PLAZOS = {
   hoy: 'Lo tienes hoy',
@@ -6,7 +7,7 @@ export const PLAZOS = {
   semana: 'Necesita una semana',
 };
 
-/** Niveles de precio: sin moneda, para que sirvan en cualquier país. */
+/** Niveles de precio: se muestran cuando no hay tasa de cambio para la moneda elegida. */
 export const NIVELES = {
   bajo: { simbolo: '$', texto: 'Económico', hasta: 20 },
   medio: { simbolo: '$$', texto: 'Intermedio', hasta: 60 },
@@ -24,26 +25,65 @@ export function textoNivel(idea) {
   return `${n.simbolo} · ${n.texto}`;
 }
 
-/**
- * A dónde lleva el botón de compra. Los productos abren Google Shopping, que enseña tiendas del
- * país de quien visita; los planes y los regalos de tiempo abren una búsqueda normal para
- * reservarlos o prepararlos. Para vender en una tienda concreta, cambia `productos`
- * (por ejemplo, Amazon: `https://www.amazon.com/s?k=${q}&tag=TU-ETIQUETA`).
- */
-export const TIENDA = {
-  productos: (q) => `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(q)}`,
-  buscador: (q) => `https://www.google.com/search?q=${encodeURIComponent(q)}`,
-};
-
-export function enlaceCompra(idea) {
-  const planes = idea.tipo === 'experiencia' || idea.tipo === 'tiempo';
-  return (planes ? TIENDA.buscador : TIENDA.productos)(idea.busqueda);
+/** «Termo de acero» → «termo-de-acero», como los listados de Mercado Libre. */
+export function slug(texto) {
+  return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 
-export function textoCompra(idea) {
+const ENLACES = {
+  mercadolibre: (q, p) => `https://listado.mercadolibre.${p.dominio}/${slug(q)}`,
+  amazon: (q, p) => {
+    const url = `https://www.amazon.${p.dominio}/s?k=${encodeURIComponent(q)}`;
+    return AFILIADOS.amazon ? `${url}&tag=${encodeURIComponent(AFILIADOS.amazon)}` : url;
+  },
+  google: (q, _p, codigo) =>
+    `https://www.google.com/search?tbm=shop&gl=${codigo.toLowerCase()}&hl=es&q=${encodeURIComponent(q)}`,
+};
+
+function esPlan(idea) {
+  return idea.tipo === 'experiencia' || idea.tipo === 'tiempo';
+}
+
+/**
+ * A dónde lleva el botón. Los productos van a la tienda del país (Mercado Libre, Amazon o
+ * Google Shopping); los planes abren una búsqueda en ese país para reservarlos.
+ */
+export function enlaceCompra(idea, codigo = PAIS_POR_DEFECTO) {
+  const pais = PAISES[codigo] ?? PAISES[PAIS_POR_DEFECTO];
+  if (esPlan(idea)) {
+    const q = idea.tipo === 'experiencia' ? `${idea.busqueda} ${pais.nombre}` : idea.busqueda;
+    return `https://www.google.com/search?gl=${codigo.toLowerCase()}&hl=es&q=${encodeURIComponent(q)}`;
+  }
+  return ENLACES[pais.tienda](idea.busqueda, pais, codigo);
+}
+
+export function textoCompra(idea, codigo = PAIS_POR_DEFECTO) {
   if (idea.tipo === 'experiencia') return 'Reservar';
   if (idea.tipo === 'tiempo') return 'Ver cómo';
-  return 'Comprar';
+  const tienda = NOMBRE_TIENDA[(PAISES[codigo] ?? PAISES[PAIS_POR_DEFECTO]).tienda];
+  return tienda === 'tiendas' ? 'Comprar' : `Comprar en ${tienda}`;
+}
+
+/** Redondea a dos cifras significativas: 14.873 → 15.000. */
+export function redondear(n) {
+  if (n <= 0) return 0;
+  const paso = 10 ** Math.max(0, Math.floor(Math.log10(n)) - 1);
+  return Math.round(n / paso) * paso;
+}
+
+/**
+ * Precio aproximado en la moneda elegida a partir del precio de referencia en dólares.
+ * `tasas` son unidades de moneda por dólar ({ ARS: 1200, … }). Sin tasa, devuelve null.
+ * El formato sigue las costumbres del país («$ 25.000» en Argentina, «US$20» en Perú…).
+ */
+export function precioLocal(idea, moneda, tasas, codigoPais = PAIS_POR_DEFECTO) {
+  if (idea.precio[1] === 0) return 'Gratis';
+  const tasa = moneda === 'USD' ? 1 : tasas?.[moneda];
+  if (!tasa) return null;
+  const formato = new Intl.NumberFormat(`es-${codigoPais}`, { style: 'currency', currency: moneda, maximumFractionDigits: 0 });
+  const [min, max] = idea.precio.map((p) => redondear(p * tasa));
+  return min === max ? `≈ ${formato.format(min)}` : `≈ ${formato.format(min)} – ${formato.format(max)}`;
 }
 
 export function categoria(id) {

@@ -86,7 +86,18 @@ header.barra {
 header.barra .envoltura { display: flex; align-items: center; gap: 12px; height: 56px; }
 .logo { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 22px; text-decoration: none; }
 .logo span { color: var(--acento); }
-header .boton { margin-left: auto; padding: 8px 14px; font-size: 14px; }
+header .region {
+  margin-left: auto; border: 1px solid var(--linea); background: var(--superficie); border-radius: 999px;
+  padding: 7px 12px; font-size: 14px; font-weight: 700;
+}
+header .boton { padding: 8px 14px; font-size: 14px; }
+form.region-form { display: grid; gap: 14px; }
+form.region-form label { display: grid; gap: 6px; font-weight: 700; font-size: 14px; }
+form.region-form select {
+  font: inherit; font-weight: 500; color: var(--tinta); background: var(--superficie);
+  border: 1px solid var(--linea); border-radius: 12px; padding: 10px 12px; width: 100%;
+}
+form.region-form p { margin: 0; color: var(--suave); font-size: 14px; }
 
 .portada { padding: 44px 0 8px; }
 .portada h1 { font-size: clamp(38px, 7vw, 72px); font-weight: 800; letter-spacing: -0.02em; max-width: 14ch; }
@@ -160,7 +171,7 @@ section { padding: 36px 0; }
 .idea .precio { font-weight: 800; font-size: 18px; color: var(--tinta); }
 .comprar {
   margin-top: auto; display: flex; justify-content: center; align-items: center; gap: 6px;
-  text-decoration: none; font-weight: 800; border-radius: 12px; padding: 12px;
+  text-decoration: none; font-weight: 800; font-size: 15px; border-radius: 12px; padding: 12px;
   background: var(--acento); color: var(--acento-tinta);
 }
 .comprar:hover { filter: brightness(1.06); }
@@ -184,6 +195,7 @@ footer { padding: 32px 0 48px; color: var(--suave); font-size: 14px; border-top:
 <header class="barra">
   <div class="envoltura">
     <a class="logo" href="#">acierto<span>.</span></a>
+    <button type="button" class="region" id="region">🌎</button>
     <button type="button" class="boton" id="sorprendeme">🎲 Sorpréndeme</button>
   </div>
 </header>
@@ -223,9 +235,19 @@ footer { padding: 32px 0 48px; color: var(--suave); font-size: 14px; border-top:
   </div>
 </dialog>
 
+<dialog id="dialogo-region" aria-labelledby="titulo-region">
+  <form method="dialog" class="dentro region-form" id="form-region">
+    <h2 id="titulo-region">🌎 ¿Desde dónde regalas?</h2>
+    <p>Así te mostramos precios en tu moneda y tiendas que envían a tu país.</p>
+    <label>País<select id="pais" required></select></label>
+    <label>Moneda<select id="moneda" required></select></label>
+    <button type="submit" class="boton" style="justify-content:center">Listo</button>
+  </form>
+</dialog>
+
 <footer>
   <div class="envoltura">
-    El nivel de precio es orientativo: $ económico, $$ intermedio, $$$ especial. El botón te lleva a las tiendas con la búsqueda hecha.
+    Los precios son aproximados y se calculan con el tipo de cambio del día. El botón te lleva a una tienda de tu país con la búsqueda hecha.
   </div>
 </footer>
 

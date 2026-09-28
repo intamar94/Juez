@@ -9,8 +9,11 @@ planes**, **Lagrimita garantizada**, **Fan nivel experto**, **Quedar bien gastan
 **Entre todos**, **Amigo secreto** y **Modo niños**. Cada una tiene su enlace
 (`#c/lo-tiene-todo`) para compartirla, y el botón **🎲 Sorpréndeme** da una idea al azar.
 
-Los textos están en español neutro y los precios se muestran por nivel ($ económico,
-$$ intermedio, $$$ especial) en lugar de en una moneda, para que la web sirva en cualquier país.
+Los textos están en español neutro. En la primera visita el usuario elige **país y moneda**:
+los precios se muestran en su moneda con el tipo de cambio del día (si no hay conexión con el
+servicio de cambio, se ven como $, $$ o $$$) y el botón lleva a una tienda que envía a su país:
+Mercado Libre en Argentina, Chile, Colombia, Ecuador, México, Perú y Uruguay; Amazon en
+EE. UU., Puerto Rico y España; Google Shopping en el resto.
 
 ```bash
 npm test     # pruebas del catálogo y de los enlaces de compra
@@ -23,11 +26,12 @@ estático (Vercel, Netlify, GitHub Pages).
 | Archivo | Qué hace |
 |---|---|
 | `catalogo.js` | Categorías y las ideas, cada una con su «por qué acierta», precio y plazo |
-| `tienda.js` | Niveles de precio y a dónde lleva cada botón (Google Shopping para productos, búsqueda para planes) |
+| `paises.js` | Países, moneda por defecto, tienda de cada país y códigos de afiliado |
+| `tienda.js` | Enlace de compra según el país y precio en la moneda elegida |
 | `app.js` / `index.html` | Portada de categorías, vista de cada categoría y «Sorpréndeme» |
 
-Para vender a través de una tienda concreta o con código de afiliado, cambia `TIENDA.productos` en
-`tienda.js`.
+Para cobrar comisión, añade tus códigos de afiliado en `AFILIADOS` (`paises.js`). Cómo pasar a
+que el usuario pague dentro de Acierto: [`compra-directa.md`](compra-directa.md).
 
 ## Qué existe ya
 

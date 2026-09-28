@@ -1,5 +1,8 @@
-import { CATEGORIAS } from './catalogo.js';
-import { categoria, enlaceCompra, ideasDe, NIVELES, PLAZOS, sorpresa, textoCompra, textoNivel } from './tienda.js';
+import { CATEGORIAS, IDEAS } from './catalogo.js';
+import { bandera, MONEDAS, nombreMoneda, PAISES, paisDelIdioma } from './paises.js';
+import {
+  categoria, enlaceCompra, ideasDe, NIVELES, PLAZOS, precioLocal, sorpresa, textoCompra, textoNivel,
+} from './tienda.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -9,8 +12,15 @@ const TIPOS = {
   digital: '📲 Digital', tiempo: '💛 Hecho por ti',
 };
 
+const CLAVE_REGION = 'acierto.region';
+const CLAVE_TASAS = 'acierto.tasas';
+const TASAS_URL = 'https://open.er-api.com/v6/latest/USD';
+const TASAS_VIGENCIA_MS = 12 * 60 * 60 * 1000;
+
 let filtroNivel = null;
 let ultimaSorpresa = null;
+let region = leer(CLAVE_REGION);
+let tasas = leer(CLAVE_TASAS)?.rates ?? null;
 
 function el(etiqueta, props = {}, ...hijos) {
   const nodo = Object.assign(document.createElement(etiqueta), props);
@@ -25,6 +35,7 @@ function conColor(nodo, color) {
 
 function iniciar() {
   pintarCategorias();
+  prepararRegion();
   $('sorprendeme').addEventListener('click', abrirSorpresa);
   $('otra-sorpresa').addEventListener('click', pintarSorpresa);
   $('cerrar-sorpresa').addEventListener('click', () => $('dialogo-sorpresa').close());
@@ -33,6 +44,90 @@ function iniciar() {
   });
   addEventListener('hashchange', () => mostrar(true));
   mostrar(false);
+  cargarTasas();
+}
+
+// — País y moneda —
+
+function prepararRegion() {
+  const pais = $('pais');
+  const moneda = $('moneda');
+  for (const [codigo, p] of Object.entries(PAISES)) pais.append(new Option(`${bandera(codigo)} ${p.nombre}`, codigo));
+  for (const m of MONEDAS) moneda.append(new Option(`${m} · ${nombreMoneda(m)}`, m));
+  // Al cambiar de país se propone su moneda; el usuario puede elegir otra.
+  pais.addEventListener('change', () => { moneda.value = PAISES[pais.value].moneda; });
+  $('region').addEventListener('click', abrirRegion);
+  // La primera vez hay que elegir: Escape no cierra la ventana hasta tener país y moneda.
+  $('dialogo-region').addEventListener('cancel', (e) => { if (!region) e.preventDefault(); });
+  $('form-region').addEventListener('submit', () => {
+    region = { pais: pais.value, moneda: moneda.value };
+    guardar(CLAVE_REGION, region);
+    pintarRegion();
+    repintar();
+  });
+  if (region && PAISES[region.pais] && MONEDAS.includes(region.moneda)) {
+    pintarRegion();
+  } else {
+    region = null;
+    abrirRegion();
+  }
+}
+
+function regionActual() {
+  if (region) return region;
+  const pais = paisDelIdioma(navigator.languages ?? [navigator.language]);
+  return { pais, moneda: PAISES[pais].moneda };
+}
+
+function abrirRegion() {
+  const r = regionActual();
+  $('pais').value = r.pais;
+  $('moneda').value = r.moneda;
+  $('dialogo-region').showModal();
+}
+
+function pintarRegion() {
+  const r = regionActual();
+  $('region').textContent = `${bandera(r.pais)} ${r.moneda}`;
+  $('region').setAttribute('aria-label', `País: ${PAISES[r.pais].nombre}. Moneda: ${r.moneda}. Cambiar`);
+}
+
+async function cargarTasas() {
+  const guardadas = leer(CLAVE_TASAS);
+  if (guardadas && Date.now() - guardadas.fecha < TASAS_VIGENCIA_MS) return;
+  try {
+    const respuesta = await fetch(TASAS_URL);
+    const datos = await respuesta.json();
+    if (datos.result !== 'success') return;
+    tasas = datos.rates;
+    guardar(CLAVE_TASAS, { fecha: Date.now(), rates: tasas });
+    repintar();
+  } catch {
+    // Sin conexión con el servicio de cambio: se muestran los niveles ($, $$, $$$).
+  }
+}
+
+function repintar() {
+  mostrar(false);
+  if ($('dialogo-sorpresa').open && ultimaSorpresa) {
+    $('idea-sorpresa').replaceChildren(tarjeta(IDEAS.find((i) => i.id === ultimaSorpresa)));
+  }
+}
+
+function leer(clave) {
+  try {
+    return JSON.parse(localStorage.getItem(clave));
+  } catch {
+    return null;
+  }
+}
+
+function guardar(clave, valor) {
+  try {
+    localStorage.setItem(clave, JSON.stringify(valor));
+  } catch {
+    // Sin almacenamiento (modo privado): vale solo para esta visita.
+  }
 }
 
 /** El hash #c/<id> abre una categoría: así cada categoría tiene su enlace para compartir. */
@@ -106,6 +201,8 @@ function pintarCategoria(c) {
 }
 
 function tarjeta(idea) {
+  const { pais, moneda } = regionActual();
+  const precio = precioLocal(idea, moneda, tasas, pais) ?? textoNivel(idea);
   return el('article', { className: 'idea' },
     el('div', { className: 'arriba' },
       el('span', { textContent: TIPOS[idea.tipo] }),
@@ -113,10 +210,10 @@ function tarjeta(idea) {
     ),
     el('h3', { textContent: idea.nombre }),
     el('p', { textContent: idea.porque }),
-    el('span', { className: 'precio', textContent: textoNivel(idea) }),
+    el('span', { className: 'precio', textContent: precio }),
     el('a', {
-      className: 'comprar', href: enlaceCompra(idea), target: '_blank', rel: 'noopener',
-      textContent: `${textoCompra(idea)} →`,
+      className: 'comprar', href: enlaceCompra(idea, pais), target: '_blank', rel: 'noopener',
+      textContent: textoCompra(idea, pais),
     }),
   );
 }

@@ -1,7 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { CATEGORIAS, IDEAS, INTERESES } from '../catalogo.js';
-import { enlaceCompra, ideasDe, nivel, PLAZOS, sorpresa, textoCompra, textoNivel } from '../tienda.js';
+import { AFILIADOS, bandera, MONEDAS, NOMBRE_TIENDA, PAISES, paisDelIdioma } from '../paises.js';
+import {
+  enlaceCompra, ideasDe, nivel, PLAZOS, precioLocal, redondear, slug, sorpresa, textoCompra, textoNivel,
+} from '../tienda.js';
 
 test('el catálogo es coherente', () => {
   const ids = new Set();
@@ -54,13 +57,9 @@ test('cada categoría con filtro tiene algo en cada nivel o casi', () => {
   }
 });
 
-test('el botón lleva a comprar o a reservar según el tipo', () => {
-  const termo = IDEAS.find((i) => i.id === 'botella-termo');
-  assert.match(enlaceCompra(termo), /tbm=shop&q=termo/);
-  assert.equal(textoCompra(termo), 'Comprar');
-  const spa = IDEAS.find((i) => i.id === 'spa-masaje');
-  assert.ok(!enlaceCompra(spa).includes('tbm=shop'));
-  assert.equal(textoCompra(spa), 'Reservar');
+test('los planes se reservan y lo hecho a mano se explica', () => {
+  assert.equal(textoCompra(IDEAS.find((i) => i.id === 'spa-masaje')), 'Reservar');
+  assert.equal(textoCompra(IDEAS.find((i) => i.id === 'cupones-tiempo')), 'Ver cómo');
 });
 
 test('los textos no usan moneda ni expresiones de un solo país', () => {
@@ -82,4 +81,57 @@ test('sorpresa no repite la anterior', () => {
   const a = sorpresa(null, () => 0);
   const b = sorpresa(a.id, () => 0);
   assert.notEqual(a.id, b.id);
+});
+
+test('cada país tiene tienda y moneda válidas', () => {
+  for (const [codigo, p] of Object.entries(PAISES)) {
+    assert.ok(NOMBRE_TIENDA[p.tienda], `${codigo}: tienda ${p.tienda}`);
+    assert.ok(MONEDAS.includes(p.moneda), `${codigo}: moneda ${p.moneda}`);
+    if (p.tienda !== 'google') assert.ok(p.dominio, `${codigo} sin dominio`);
+    assert.doesNotThrow(() => new Intl.NumberFormat(`es-${codigo}`, { style: 'currency', currency: p.moneda }));
+  }
+});
+
+test('el enlace de compra depende del país', () => {
+  const termo = IDEAS.find((i) => i.id === 'botella-termo');
+  assert.equal(enlaceCompra(termo, 'MX'), 'https://listado.mercadolibre.com.mx/termo-acero-inoxidable');
+  assert.equal(textoCompra(termo, 'MX'), 'Comprar en Mercado Libre');
+  assert.match(enlaceCompra(termo, 'ES'), /^https:\/\/www\.amazon\.es\/s\?k=termo/);
+  assert.match(enlaceCompra(termo, 'CR'), /tbm=shop&gl=cr/);
+  assert.equal(textoCompra(termo, 'CR'), 'Comprar');
+  const spa = IDEAS.find((i) => i.id === 'spa-masaje');
+  assert.match(decodeURIComponent(enlaceCompra(spa, 'CO')), /gl=co.*Colombia$/);
+});
+
+test('el afiliado de Amazon solo se añade si está configurado', () => {
+  const termo = IDEAS.find((i) => i.id === 'botella-termo');
+  assert.ok(!enlaceCompra(termo, 'US').includes('tag='));
+  AFILIADOS.amazon = 'acierto-20';
+  try {
+    assert.ok(enlaceCompra(termo, 'US').endsWith('&tag=acierto-20'));
+  } finally {
+    AFILIADOS.amazon = '';
+  }
+});
+
+test('slug quita tildes y espacios', () => {
+  assert.equal(slug('Kit limpieza ¡Sneakers! de España'), 'kit-limpieza-sneakers-de-espana');
+});
+
+test('precio local: convierte, redondea y cae a null sin tasa', () => {
+  const termo = IDEAS.find((i) => i.id === 'botella-termo'); // 20–45 de referencia
+  assert.equal(redondear(14873), 15000);
+  assert.equal(redondear(37), 37);
+  const ars = precioLocal(termo, 'ARS', { ARS: 1234 }, 'AR');
+  assert.match(ars, /25\.000/);
+  assert.match(ars, /56\.000/);
+  assert.match(precioLocal(termo, 'USD', null, 'US'), /20.*45/);
+  assert.equal(precioLocal(termo, 'EUR', {}, 'ES'), null);
+  assert.equal(precioLocal({ precio: [0, 0] }, 'MXN', null, 'MX'), 'Gratis');
+});
+
+test('el país se adivina por el idioma del navegador', () => {
+  assert.equal(paisDelIdioma(['es-AR', 'es']), 'AR');
+  assert.equal(paisDelIdioma(['en', 'es-419']), 'US');
+  assert.equal(bandera('MX'), '🇲🇽');
 });
