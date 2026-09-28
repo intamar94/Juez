@@ -2,6 +2,7 @@ import { IDEAS } from './catalogo.js';
 import { abrirCheckout, iniciarCheckout, sePuedeComprar } from './checkout.js';
 import { bandera, MONEDAS, nombreMoneda, PAISES, paisDelIdioma } from './paises.js';
 import { enlaceCompra, textoCompra, sorpresa } from './tienda.js';
+import { INTERESTS, REL, OCC, PROFESSIONS, PERSONALITY, SPECIAL, conceptosDesdeTexto, expandConceptos, oportunidadesDesdeConceptos, scoreConceptoEnIdea, scoreOportunidadEnIdea, normalizeLocal } from './semantica.js';
 
 const $ = id => document.getElementById(id);
 const REGION_KEY = 'acierto.region';
@@ -10,73 +11,6 @@ let tasas = null;
 let currentIdeas = [];
 let activeFilter = 'all';
 let lastIdeaId = null;
-
-const INTERESTS = {
-  cocina:['cocina','cocinar','chef','receta','gastronom','hornear','repost'],
-  cafe:['café','cafe','barista','espresso'],
-  bebidas:['vino','cerveza','whisky','ron','gin','coctel','cocktail'],
-  deporte:['fútbol','futbol','tenis','golf','correr','deporte','ciclismo','escalada','yoga','fitness','padel','surf'],
-  naturaleza:['montaña','senderismo','naturaleza','campo','jardín','jardin','aire libre','camping','pesca'],
-  viajes:['viaja','viajes','viajar','avión','avion','turismo','hotel','mochila'],
-  lectura:['libro','leer','lectura','novela','poesia'],
-  musica:['música','musica','concierto','guitarra','banda','piano','vinilo'],
-  cine:['cine','película','pelicula','series','netflix','filme'],
-  juegos:['juego de mesa','juegos','ajedrez','cartas'],
-  videojuegos:['videojuego','gaming','playstation','xbox','nintendo','steam'],
-  tecnologia:['tecnología','tecnologia','programador','programación','informatica','informática','computación','ordenador','pc','software','electronica'],
-  plantas:['plantas','jardín','jardin','botánica','botanica','huerto'],
-  manualidades:['arte','pinta','dibuj','cerámica','ceramica','manualidad','coser','madera','bricolaje'],
-  bienestar:['spa','relaj','bienestar','cuidado','autocuidado','meditacion','meditación'],
-  mascotas:['perro','gato','mascota','caballo'],
-  moda:['moda','ropa','zapatos','sneaker','accesorios'],
-  foto:['fotografía','fotografia','cámara','camara'],
-};
-
-const REL = {
-  pareja:['pareja','novio','novia','espos','esposa','marido','mujer','compañer'],
-  familia:['madre','mamá','mama','padre','papá','papa','suegra','suegro','hermano','hermana','abuelo','abuela','hijo','hija','familia','tio','tía','tia','primo','prima'],
-  amistad:['amigo','amiga','mejor amigo','mejor amiga'],
-  trabajo:['jefe','jefa','compañero','compañera','colega','profesor','profesora','cliente'],
-};
-
-const OCC = {
-  graduacion:['graduación','graduacion','grado','se gradúa','se gradua','doctorado','tesis','master','máster'],
-  cumpleanos:['cumpleaños','cumple','aniversario de nacimiento'],
-  aniversario:['aniversario'],
-  navidad:['navidad','reyes','nochebuena'],
-  jubilacion:['jubilación','jubilacion','retira','retiro'],
-  nuevoTrabajo:['nuevo trabajo','nuevo puesto','ascenso','promoción','promocion','primer día'],
-  mudanza:['mudanza','casa nueva','piso nuevo'],
-  nacimiento:['bebé','bebe','nacimiento','embarazo'],
-};
-
-const PROFESSIONS = {
-  ciencia:['científica','cientifico','científico','laboratorio','investigador','investigadora','bióloga','biologa','química','quimica','física','fisica'],
-  tecnologia:['programador','programadora','desarrollador','desarrolladora','ingeniero de software','informático','informatica','developer','tech'],
-  aviacion:['piloto','aviación','aviacion','aeropuerto','vuelo','azafata','tripulante'],
-  cocina:['chef','cocinero','cocinera','pastelero','pastelera'],
-  medicina:['médico','medica','médica','enfermero','enfermera','dentista','farmacéutico','farmaceutica'],
-  educacion:['profesor','profesora','maestro','maestra','docente'],
-  arte:['artista','diseñador','diseñadora','fotógrafo','fotografa','fotografo'],
-  oficio:['electricista','carpintero','carpintera','mecánico','mecanico','fontanero','herrero','artesano'],
-};
-
-const PERSONALITY = {
-  practico:['práctico','practica','práctica','util','útil','funcional','no quiere adornos'],
-  minimalista:['minimalista','sencillo','sencilla','simple','no acumula'],
-  curioso:['curioso','curiosa','aprender','experimentos','investigar'],
-  aventurero:['aventurero','aventurera','aventura','arriesgado','explorar'],
-  sentimental:['sentimental','emocional','recuerdo','recuerdos','nostalgia','historia juntos'],
-  creativo:['creativo','creativa','original','inventar','crear','manualidades'],
-  foodie:['gourmet','foodie','comida','ingredientes'],
-};
-
-const SPECIAL = {
-  todo:['no necesita nada','tiene de todo','ya tiene todo','tiene casi todo','difícil de regalar','dificil de regalar','es imposible regalarle','no quiere cosas','no necesita regalos'],
-  personal:['personal','personalizado','hecho para','con su nombre','con nuestros recuerdos','sentimental','emocional'],
-  unusual:['sorpresa','original','único','unico','raro','diferente','poco común','poco comun','inusual'],
-  experience:['experiencia','plan','salida','viaje','concierto','entrada','reservar'],
-};
 
 function read(k){try{return JSON.parse(localStorage.getItem(k))}catch{return null}}
 function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
@@ -155,12 +89,7 @@ function paintRegion(){
   $('region').textContent=bandera(r.pais)+' '+r.moneda;
 }
 
-function normalize(value){
-  return String(value||'').toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-    .replace(/[^a-z0-9ñü ]/gi,' ')
-    .replace(/\s+/g,' ').trim();
-}
+function normalize(value){ return normalizeLocal(value); }
 function hasAny(text, words){
   const t=normalize(text);
   return words.some(x=>t.includes(normalize(x)));
@@ -171,6 +100,9 @@ function findGroups(text, groups){
 
 function extract(text){
   const t=normalize(text);
+  const detectedConcepts=conceptosDesdeTexto(t);
+  const semanticConcepts=expandConceptos(detectedConcepts);
+  const semanticOpportunities=oportunidadesDesdeConceptos(semanticConcepts);
   const p={
     interests:findGroups(t,INTERESTS),
     relations:findGroups(t,REL),
@@ -183,26 +115,55 @@ function extract(text){
     avoid:[],
     custom:false,
     semantic_tags:[],
+    semantic_concepts:semanticConcepts,
+    semantic_opportunities:semanticOpportunities,
   };
 
-  const age=t.match(/\b(\d{1,3})\s*(?:anos|anos)\b/);
+  const age=t.match(/\b(\\d{1,3})\\s*(?:anos)\\b/);
   if(age) p.age=Number(age[1]);
 
-  const budget=t.match(/(?:menos de|hasta|maximo|max|presupuesto de|presupuesto)\s*(?:€|eur|\$)?\s*(\d{1,5})/);
+  const budget=t.match(/(?:menos de|hasta|maximo|max|presupuesto de|presupuesto)\\s*(?:€|eur|\\$)?\\s*(\\d{1,5})/);
   if(budget) p.budget=Number(budget[1]);
 
-  if(hasAny(t,SPECIAL.todo)){p.avoid.push('objetos genéricos');p.signals.push('Evitar otro objeto genérico');p.semantic_tags.push('experiencia','digital');}
-  if(hasAny(t,SPECIAL.personal)){p.custom=true;p.signals.push('El componente personal importa');p.semantic_tags.push('personalizado','recuerdo');}
-  if(hasAny(t,SPECIAL.unusual)){p.signals.push('Busca algo poco común');p.semantic_tags.push('original','sorpresa');}
+  if(hasAny(t,SPECIAL.todo)){
+    p.avoid.push('objetos genéricos');
+    p.signals.push('Evitar otro objeto genérico');
+    p.semantic_tags.push('experiencia','digital');
+  }
+  if(hasAny(t,SPECIAL.personal)){
+    p.custom=true;
+    p.signals.push('El componente personal importa');
+    p.semantic_tags.push('personalizado','recuerdo');
+  }
+  if(hasAny(t,SPECIAL.unusual)){
+    p.signals.push('Busca algo poco común');
+    p.semantic_tags.push('original','sorpresa');
+  }
   if(hasAny(t,SPECIAL.experience))p.semantic_tags.push('experiencia');
+  if(hasAny(t,SPECIAL.urgent))p.semantic_tags.push('hoy');
+  if(hasAny(t,SPECIAL.cheap))p.semantic_tags.push('economico');
 
   if(p.personality.includes('practico'))p.signals.push('Valora lo práctico y útil');
   if(p.personality.includes('minimalista'))p.signals.push('Conviene evitar acumular objetos');
   if(p.personality.includes('sentimental'))p.signals.push('La historia emocional puede ser parte del regalo');
   if(p.occasions.includes('graduacion'))p.signals.push('Momento profesional importante');
   if(p.professions.length)p.signals.push('Su profesión puede orientar una idea específica');
+  if(semanticConcepts.length){
+    const lead=semanticConcepts.slice(0,4).map(([id])=>labelConcepto(id)).join(' · ');
+    p.signals.push('Hemos conectado '+semanticConcepts.length+' conceptos relacionados: '+lead);
+  }
 
-  p.semantic_tags=[...new Set([...p.interests,...p.professions,...p.personality,...p.occasions,...p.semantic_tags])];
+  p.semantic_tags=[
+    ...new Set([
+      ...p.interests,
+      ...p.professions,
+      ...p.personality,
+      ...p.occasions,
+      ...p.semantic_tags,
+      ...semanticConcepts.map(([id])=>id),
+      ...semanticOpportunities.slice(0,12).map(([id])=>id)
+    ])
+  ];
   return p;
 }
 
@@ -218,6 +179,15 @@ function score(i,p){
   for(const x of p.interests) if((i.intereses||[]).includes(x)) s+=10;
   for(const x of p.relations) if((i.relaciones||[]).includes(x)) s+=4;
   for(const x of p.professions) if(text.includes(normalize(x))) s+=6;
+
+  // La red semántica permite acertar aunque el texto del regalo no mencione literalmente
+  // la profesión original: arqueología → historia → mapa/museo/experiencia, por ejemplo.
+  for(const [concept,weight] of p.semantic_concepts||[]){
+    if(scoreConceptoEnIdea(concept,text)) s += 5 * Math.min(weight,1);
+  }
+  for(const [opportunity,weight] of p.semantic_opportunities||[]){
+    if(scoreOportunidadEnIdea(opportunity,text)) s += 4 * Math.min(weight,1.5);
+  }
   for(const x of p.personality){
     if((x==='practico' || x==='minimalista') && ['experiencia','digital','tiempo','consumible'].includes(i.tipo))s+=4;
     if(x==='sentimental' && i.categorias?.includes('con-historia'))s+=8;
@@ -306,6 +276,26 @@ function renderProfile(p){
   activeFilter='all';
   renderFilters();
   renderCards();
+}
+
+function labelConcepto(i){
+  const labels={
+    arqueologia:'arqueología', antropologia:'antropología', historia:'historia', patrimonio:'patrimonio',
+    museo:'museos', cultura:'cultura', excavacion:'excavación', etnografia:'etnografía',
+    cartografia:'cartografía', campo:'trabajo de campo', investigacion:'investigación',
+    arquitectura:'arquitectura', ingenieria:'ingeniería', mecanica:'mecánica', electricidad:'electricidad',
+    electronica:'electrónica', aviacion:'aviación', marina:'náutica', medicina:'medicina',
+    biologia:'biología', botanica:'botánica', zoologia:'zoología', geologia:'geología',
+    astronomia:'astronomía', fisica:'física', quimica:'química', matematicas:'matemáticas',
+    programacion:'programación', ia:'IA', datos:'datos', ciberseguridad:'ciberseguridad',
+    cocina:'cocina', cafe:'café', vino:'vino', lectura:'lectura', escritura:'escritura',
+    musica:'música', fotografia:'fotografía', cine:'cine', arte:'arte', diseno:'diseño',
+    manualidades:'manualidades', bricolaje:'bricolaje', jardines:'jardín', mascotas:'mascotas',
+    viajes:'viajes', naturaleza:'naturaleza', deporte:'deporte', pesca:'pesca', videojuegos:'videojuegos',
+    juegos:'juegos', idiomas:'idiomas', baile:'baile', coleccionismo:'coleccionismo',
+    sostenibilidad:'sostenibilidad', aventura:'aventura', ciencia:'ciencia', tecnologia:'tecnología'
+  };
+  return labels[i]||String(i).replace(/([A-Z])/g,' $1').replace(/_/g,' ').replace(/^./,c=>c.toUpperCase());
 }
 
 function labelInterest(i){
