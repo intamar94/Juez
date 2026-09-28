@@ -355,7 +355,7 @@ function card(i,featured){
   const price=i.precio&&i.precio[0]===0?'Gratis / hecho por ti':currency(i.precio?.[0]||0,r.moneda)+' – '+currency(i.precio?.[1]||0,r.moneda);
   article.innerHTML='<div class="cardtop2"><span>'+type+'</span><span class="match2">'+(i._score>=12?'Encaja especialmente bien':'Puede encajar')+'</span></div><h4>'+esc(i.nombre)+'</h4><p>'+esc(i.porque)+'</p><div class="reason2">💡 '+esc(reason(i))+'</div><div class="cardfooter2"><span class="price2">'+price+'</span></div>';
   const footer=article.querySelector('.cardfooter2');
-  if(sePuedeComprar(i)){
+  if(sePuedeComprar(i, r.pais)){
     const b=document.createElement('button');
     b.className='buy2';
     b.textContent='Comprar aquí';
