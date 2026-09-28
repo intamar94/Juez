@@ -14,7 +14,7 @@ de ambientes o rincón de lectura.
 |---|---|
 | [`cad/`](cad/) | Modelos paramétricos en OpenSCAD: nodos, anclajes, tapas, enganche de módulos, módulo de luz y paneles (DXF para CNC) |
 | [`configurador/`](configurador/) | Web para diseñar el corral según el espacio: plano, lista de piezas, costo y horas de impresión |
-| [`docs/`](docs/) | Concepto, lo que dicen las reseñas del mercado, requisitos de seguridad y hoja de ruta |
+| [`docs/`](docs/) | Concepto, lo que dicen las reseñas del mercado, requisitos de seguridad, hoja de ruta y [plan hasta la primera venta](docs/plan-lanzamiento.md) |
 
 ## Empezar
 
