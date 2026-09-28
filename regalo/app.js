@@ -119,10 +119,10 @@ function extract(text){
     semantic_opportunities:semanticOpportunities,
   };
 
-  const age=t.match(/\b(\\d{1,3})\\s*(?:anos)\\b/);
+  const age=t.match(/\b(\d{1,3})\s*(?:anos)\b/);
   if(age) p.age=Number(age[1]);
 
-  const budget=t.match(/(?:menos de|hasta|maximo|max|presupuesto de|presupuesto)\\s*(?:€|eur|\\$)?\\s*(\\d{1,5})/);
+  const budget=t.match(/(?:menos de|hasta|maximo|max|presupuesto de|presupuesto)\s*(?:€|eur|\$)?\s*(\d{1,5})/);
   if(budget) p.budget=Number(budget[1]);
 
   if(hasAny(t,SPECIAL.todo)){
