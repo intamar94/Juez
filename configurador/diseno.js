@@ -23,6 +23,9 @@ export const COSTOS = {
   },
 };
 
+// Diferencia máxima aceptable entre el largo pedido y el real de un lado (mm).
+export const TOLERANCIA_LADO = 60;
+
 export const FORMAS = {
   rectangulo: 'Rectángulo (4 lados)',
   pared: 'Contra una pared (3 lados)',
@@ -169,20 +172,26 @@ export function disenar({ forma, ancho, fondo, puerta = true, modulos = [] }) {
       }
     });
     if (ladoPuerta === -1) {
-      // ningún lado tiene un panel de 800: forzar uno en el lado más largo
+      // Ningún lado trae un panel de 800: probar a meterlo en el lado más largo,
+      // solo o seguido de otros paneles. Si así el lado queda descuadrado, no hay puerta.
       const i = lados.reduce((m, l, k) => (l.largo > lados[m].largo ? k : m), 0);
-      const resto = llenarLado(
-        lados[i].largo - SISTEMA.anchoPuerta - SISTEMA.posteDiam,
-        lados[i].extremosPared,
-      );
-      if (resto) {
-        const paneles = [SISTEMA.anchoPuerta, ...resto.paneles];
-        lados[i] = { ...lados[i], paneles, largoReal: largoReal(paneles, lados[i].extremosPared) };
-        lados[i].error = Math.abs(lados[i].largoReal - lados[i].largo);
+      const { largo, extremosPared } = lados[i];
+      const candidatos = [[SISTEMA.anchoPuerta]];
+      const resto = largo - SISTEMA.anchoPuerta - SISTEMA.posteDiam;
+      if (resto > 0) candidatos.push([SISTEMA.anchoPuerta, ...llenarLado(resto, extremosPared).paneles]);
+      const mejor = candidatos
+        .map((paneles) => {
+          const real = largoReal(paneles, extremosPared);
+          return { paneles, largoReal: real, error: Math.abs(real - largo) };
+        })
+        .sort((a, b) => a.error - b.error)[0];
+      if (mejor.error <= TOLERANCIA_LADO) {
+        lados[i] = { ...lados[i], ...mejor };
         ladoPuerta = i;
       }
     }
   }
+  const puertaNoCabe = puerta && ladoPuerta === -1;
 
   // Nodos: uno por vértice con poste, más uno de 180° entre paneles de un mismo lado.
   const nodos = {};
@@ -268,6 +277,7 @@ export function disenar({ forma, ancho, fondo, puerta = true, modulos = [] }) {
     puntos,
     lados,
     ladoPuerta,
+    puertaNoCabe,
     nodos,
     postes,
     anclajes,

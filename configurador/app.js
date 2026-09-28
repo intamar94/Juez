@@ -1,4 +1,4 @@
-import { disenar, FORMAS, MODULOS, modulosParaEdad, SISTEMA } from './diseno.js';
+import { disenar, FORMAS, MODULOS, modulosParaEdad, SISTEMA, TOLERANCIA_LADO } from './diseno.js';
 
 const $ = (id) => document.getElementById(id);
 const NS = 'http://www.w3.org/2000/svg';
@@ -178,7 +178,8 @@ function actualizar() {
 
   const avisos = [];
   if (!cabe) avisos.push('El corral no cabe en la habitación con estas medidas.');
-  if (d.errorMax > 60) avisos.push(`Algún lado no cuadra con los paneles estándar (hasta ${Math.round(d.errorMax / 10)} cm de diferencia). Revisa la tabla de lados.`);
+  if (d.errorMax > TOLERANCIA_LADO) avisos.push(`Algún lado no cuadra con los paneles estándar (hasta ${Math.round(d.errorMax / 10)} cm de diferencia). Revisa la tabla de lados.`);
+  if (d.puertaNoCabe) avisos.push('Ningún lado es lo bastante largo para la puerta de 80 cm: agranda un lado o quita la puerta.');
   if (d.area < 1) avisos.push('Menos de 1 m²: el bebé tendrá poco espacio para gatear.');
   $('aviso').hidden = avisos.length === 0;
   $('aviso').textContent = avisos.join(' ');

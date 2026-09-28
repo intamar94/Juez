@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { disenar, llenarLado, modulosParaEdad, SISTEMA } from '../diseno.js';
+import { disenar, llenarLado, modulosParaEdad, SISTEMA, TOLERANCIA_LADO } from '../diseno.js';
 
 test('llenarLado se acerca al largo pedido', () => {
   const r = llenarLado(1500);
@@ -72,4 +72,19 @@ test('módulos recomendados según la edad', () => {
   const nino = modulosParaEdad(30).map((m) => m.id);
   assert.ok(bebe.includes('espejo') && !bebe.includes('estante'));
   assert.ok(nino.includes('luces-armables') && !nino.includes('espejo'));
+});
+
+test('sin lado para la puerta: se avisa y no se descuadra el corral', () => {
+  // hexágono pequeño: lados de 45 cm, la puerta de 80 cm no cabe
+  const d = disenar({ forma: 'hexagono', ancho: 900, fondo: 0, puerta: true });
+  assert.equal(d.puertaNoCabe, true);
+  assert.equal(d.ladoPuerta, -1);
+  assert.ok(!d.piezas.some((p) => p.nombre.startsWith('Panel puerta')));
+});
+
+test('la puerta se fuerza en el lado más largo cuando cuadra', () => {
+  const d = disenar({ forma: 'rectangulo', ancho: 1680, fondo: 1250, puerta: true });
+  assert.equal(d.puertaNoCabe, false);
+  assert.ok(d.lados[d.ladoPuerta].paneles.includes(SISTEMA.anchoPuerta));
+  assert.ok(d.lados[d.ladoPuerta].error <= TOLERANCIA_LADO);
 });

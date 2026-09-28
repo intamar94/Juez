@@ -24,4 +24,8 @@ En lugar de encuestas, se parte de reseñas y foros públicos. Primera pasada (s
 - [Parenting Mentor: Playpen Movement Safety](https://parentingmentor.com/guides/guide/playpen-movement-safety/)
 - [Snuggymom: Playpens Safe Use Guidelines](https://snuggymom.com/playpens-safe-use-guidelines/)
 - [HappyGira: How to Assemble Baby Playpen](https://happygira.com/pages/how-to-assemble-baby-playpen)
-- [The Bump: Best Baby Playpens 2026](https://www.thebump.com/a/best-baby-playpens)
+
+Pendientes de leer completas (solo se vieron extractos del buscador):
+[The Bump](https://www.thebump.com/a/best-baby-playpens),
+[BestReviews](https://bestreviews.com/baby-and-kids/playards-portable-beds/best-playpens),
+[The Good Trade](https://www.thegoodtrade.com/features/nontoxic-baby-playpen/).
