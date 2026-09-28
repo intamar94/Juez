@@ -11,7 +11,7 @@
 //   relaciones 'pareja' | 'familia' | 'amistad' | 'trabajo'; ausente = todas
 //   categorias ids de CATEGORIAS donde aparece destacada
 //   porque     por qué suele acertar (lo que se lee en la sección de la idea)
-//   busqueda   texto para buscarla en cualquier tienda
+//   busqueda   lo que se escribe en el buscador de la tienda para comprarla
 
 export const INTERESES = {
   cocina: '🍳 Cocina',
@@ -36,67 +36,54 @@ export const INTERESES = {
 
 export const CATEGORIAS = [
   {
-    id: 'lo-tiene-todo',
-    emoji: '🦄',
-    nombre: 'Lo tiene todo',
-    lema: 'Nada de más trastos: cosas que se gastan, se viven o mejoran lo que ya usa.',
-    color: 'violeta',
+    id: 'lo-tiene-todo', emoji: '🦄', color: 'violeta',
+    nombre: 'Misión imposible',
+    lema: 'Para quien lo tiene todo: cosas que se gastan, se viven o no se compraría.',
   },
   {
-    id: 'ultima-hora',
-    emoji: '⏰',
-    nombre: 'Para ya mismo',
-    lema: 'Se regala hoy o mañana y no parece improvisado.',
-    color: 'rojo',
+    id: 'ultima-hora', emoji: '🚨', color: 'rojo',
+    nombre: 'Me pilló el toro',
+    lema: 'Lo tienes hoy o mañana y nadie notará que fue a última hora.',
   },
   {
-    id: 'mejora-diaria',
-    emoji: '✨',
-    nombre: 'La versión buena',
-    lema: 'Lo que usa cada día, pero en la versión que nunca se compraría.',
-    color: 'ambar',
+    id: 'mejora-diaria', emoji: '✨', color: 'ambar',
+    nombre: 'Caprichos que nunca se compraría',
+    lema: 'Lo que usa cada día, en la versión buena.',
   },
   {
-    id: 'experiencias',
-    emoji: '🎟️',
-    nombre: 'Planes, no cosas',
+    id: 'experiencias', emoji: '🎟️', color: 'azul',
+    nombre: 'Cero trastos, mil planes',
     lema: 'Un recuerdo compartido dura más que cualquier objeto.',
-    color: 'azul',
   },
   {
-    id: 'con-historia',
-    emoji: '💌',
-    nombre: 'Que emocione',
-    lema: 'Regalos con memoria: fotos, cartas, recuerdos vuestros.',
-    color: 'rosa',
+    id: 'con-historia', emoji: '🥹', color: 'rosa',
+    nombre: 'Lagrimita garantizada',
+    lema: 'Fotos, cartas y recuerdos vuestros.',
   },
   {
-    id: 'su-obsesion',
-    emoji: '🔥',
-    nombre: 'Para su obsesión',
+    id: 'su-obsesion', emoji: '🤓', color: 'naranja',
+    nombre: 'Friki nivel experto',
     lema: 'Tiene una afición y quieres estar a la altura.',
-    color: 'naranja',
   },
   {
-    id: 'poco-dinero',
-    emoji: '🪙',
-    nombre: 'Menos de 20 €',
+    id: 'poco-dinero', emoji: '🪙', color: 'verde',
+    nombre: 'Quedar bien por menos de 20 €',
     lema: 'Detalles baratos que se nota que están pensados.',
-    color: 'verde',
   },
   {
-    id: 'en-grupo',
-    emoji: '🤝',
-    nombre: 'Entre varios',
-    lema: 'Juntar el dinero para algo que de verdad quiera.',
-    color: 'turquesa',
+    id: 'en-grupo', emoji: '🐷', color: 'turquesa',
+    nombre: 'Hacemos bote',
+    lema: 'Juntáis el dinero y os lucís con algo grande.',
   },
   {
-    id: 'compromiso',
-    emoji: '💼',
-    nombre: 'Compromiso sin riesgo',
-    lema: 'Compañeros, amigo invisible o casi desconocidos.',
-    color: 'gris',
+    id: 'compromiso', emoji: '🕵️', color: 'gris',
+    nombre: 'Amigo invisible',
+    lema: 'Compañeros, cuñados y casi desconocidos, sin riesgo.',
+  },
+  {
+    id: 'peques', emoji: '🧸', color: 'cielo',
+    nombre: 'Modo peque',
+    lema: 'Para niños y niñas que ya tienen demasiados juguetes.',
   },
 ];
 
@@ -392,7 +379,7 @@ export const IDEAS = [
     porque: 'Es un regalo y un plan a la vez. Pregunta en la tienda por uno para su grupo.',
     precio: [20, 60], plazo: 'dias', tipo: 'objeto',
     intereses: ['juegos'], edades: ['nino', 'joven', 'adulto', 'mayor'],
-    categorias: ['su-obsesion', 'compromiso'],
+    categorias: ['su-obsesion', 'compromiso', 'peques'],
     busqueda: 'juego de mesa recomendado',
   },
   {
@@ -501,7 +488,7 @@ export const IDEAS = [
     porque: 'Juego largo y abierto: vale para muchas edades y se combina con lo que ya tiene.',
     precio: [20, 80], plazo: 'dias', tipo: 'objeto',
     intereses: ['juegos', 'manualidades', 'tecnologia'], edades: ['nino'],
-    categorias: ['su-obsesion'],
+    categorias: ['peques'],
     busqueda: 'juego construcción niños',
   },
   {
@@ -510,7 +497,7 @@ export const IDEAS = [
     porque: 'Una tarde entera de “¡mira lo que pasa!”, y aprende sin darse cuenta.',
     precio: [15, 40], plazo: 'dias', tipo: 'objeto',
     intereses: ['tecnologia', 'naturaleza', 'manualidades'], edades: ['nino'],
-    categorias: ['su-obsesion', 'poco-dinero'],
+    categorias: ['peques', 'poco-dinero'],
     busqueda: 'kit experimentos ciencia niños',
   },
   {
@@ -519,7 +506,7 @@ export const IDEAS = [
     porque: 'Zoo, acuario, parque de atracciones… a los niños les llenan más los planes que los juguetes.',
     precio: [15, 60], plazo: 'hoy', tipo: 'experiencia',
     intereses: ['naturaleza', 'mascotas', 'deporte'], edades: ['nino'], relaciones: ['familia', 'amistad'],
-    categorias: ['experiencias', 'ultima-hora'],
+    categorias: ['peques', 'ultima-hora'],
     busqueda: 'entradas zoo acuario parque niños',
   },
   {
@@ -528,7 +515,7 @@ export const IDEAS = [
     porque: 'Pide consejo en la librería por edad; es barato y lo va a releer mil veces.',
     precio: [10, 25], plazo: 'hoy', tipo: 'objeto',
     intereses: ['lectura', 'manualidades'], edades: ['nino'],
-    categorias: ['poco-dinero', 'ultima-hora'],
+    categorias: ['peques', 'poco-dinero', 'ultima-hora'],
     busqueda: 'libro ilustrado infantil recomendado',
   },
 

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Acierto: encuentra el regalo perfecto por categorías y con un test de cuatro preguntas.",
+  "description": "Acierto: encuentra el regalo perfecto por categorías y cómpralo en un clic.",
   "scripts": {
     "test": "node --test test/*.test.js",
     "start": "npx --yes serve -l 5174 ."

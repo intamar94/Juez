@@ -1,11 +1,16 @@
 # Acierto
 
-Web para encontrar el regalo perfecto: categorías por **situación** («Lo tiene todo», «Para ya
-mismo», «Planes, no cosas»…) y un test opcional de cuatro preguntas que ordena las ideas.
-Cada idea explica por qué suele acertar, cuánto cuesta y si llega a tiempo.
+Web para encontrar el regalo perfecto en dos clics: eliges una categoría, eliges un regalo y el
+botón te lleva a la tienda con la búsqueda hecha. Sin registro y sin preguntas.
+
+Las categorías se organizan por situación y con nombre propio: **Misión imposible** (lo tiene
+todo), **Me pilló el toro** (última hora), **Caprichos que nunca se compraría**, **Cero trastos,
+mil planes**, **Lagrimita garantizada**, **Friki nivel experto**, **Quedar bien por menos de
+20 €**, **Hacemos bote**, **Amigo invisible** y **Modo peque**. Cada una tiene su enlace
+(`#c/lo-tiene-todo`) para compartirla, y el botón **🎲 Sorpréndeme** da una idea al azar.
 
 ```bash
-npm test     # pruebas del catálogo y del recomendador
+npm test     # pruebas del catálogo y de los enlaces de compra
 npm start    # abre http://localhost:5174
 ```
 
@@ -14,9 +19,11 @@ estático (Vercel, Netlify, GitHub Pages).
 
 | Archivo | Qué hace |
 |---|---|
-| `catalogo.js` | Categorías, intereses y las ideas, cada una con su «por qué funciona» |
-| `recomendador.js` | Filtra por presupuesto, plazo, edad y relación, y puntúa por intereses |
-| `app.js` / `index.html` | Interfaz: categorías, test, resultados y lista para compartir |
+| `catalogo.js` | Categorías y las ideas, cada una con su «por qué acierta», precio y plazo |
+| `tienda.js` | A qué tienda lleva cada botón (Amazon para productos, búsqueda para planes) y el código de afiliado |
+| `app.js` / `index.html` | Portada de categorías, vista de cada categoría y «Sorpréndeme» |
+
+Para monetizar, pon tu código de Amazon Afiliados en `TIENDA.etiquetaAfiliado` (`tienda.js`).
 
 ## Qué existe ya
 
@@ -31,25 +38,27 @@ estático (Vercel, Netlify, GitHub Pages).
 De los estudios de psicología del regalo y de lo que se repite en foros:
 
 1. **Lo pedido gana.** Quien recibe valora más lo que pidió y lo considera igual de pensado;
-   quien regala lo subestima (Gino y Flynn). → La lista para compartir y la sección de pistas.
+   quien regala lo subestima (Gino y Flynn).
 2. **Uso a largo plazo, no el «¡oh!» al abrirlo.** Quien regala piensa en el momento del
    intercambio; quien recibe, en la utilidad (Galak, Givi y Williams). → Cada idea explica su uso.
 3. **Versátil antes que hiperpersonalizado.** Los regalos muy personalizados se usan menos de
    lo que el que regala cree. → Categoría «La versión buena» de lo que ya usa.
 4. **Quien «lo tiene todo» no quiere más cosas.** En foros se repite: comida buena, cosas que
-   se gastan, experiencias y «la versión mejor» de lo cotidiano. → Interruptor «No quiere más
-   cosas» y categoría «Lo tiene todo» sin objetos.
-5. **La prisa manda.** Buena parte de las búsquedas son de última hora. → Filtro de plazo y
-   categoría «Para ya mismo» con ideas que se consiguen hoy.
+   se gastan, experiencias y «la versión mejor» de lo cotidiano. → «Misión imposible» no
+   incluye objetos.
+5. **La prisa manda.** Buena parte de las búsquedas son de última hora. →
+   «Me pilló el toro» solo tiene ideas que se consiguen hoy, y cada tarjeta dice el plazo.
 6. **Llegar tarde perjudica menos de lo que se cree** (Haltman, 2025).
-7. **Desconfianza hacia lo patrocinado.** → Sin afiliados: «Buscar» abre una búsqueda normal.
+7. **Desconfianza hacia lo patrocinado.** → Cada idea explica por qué acierta en vez de empujar
+   un producto concreto.
+8. **Fricción.** Los tests largos cansan: aquí no hay preguntas, solo categorías y un botón de
+   compra.
 
 ## Siguientes pasos
 
 - Enlazar productos concretos por idea (curados a mano o con una API de tienda) manteniendo
   la etiqueta de patrocinado visible si se monetiza.
-- Recordatorios de fechas (cumpleaños, aniversarios) para evitar el «última hora».
-- Lista de deseos propia: que la persona apunte lo que quiere y comparta el enlace.
+- Enlaces directos a tiendas de experiencias (cajas regalo, entradas) en lugar de la búsqueda.
 - Traer ideas de la comunidad con votos de «lo regalé y acerté».
 
 ## Fuentes
