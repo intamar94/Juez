@@ -17,6 +17,18 @@ jobs:
           node-version: 22
       - run: npm test
 
+  regalo:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: regalo
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm test
+
   cad:
     runs-on: ubuntu-latest
     steps:

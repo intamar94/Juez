@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Acierto · el regalo que sí va a usar</title>
+<meta name="description" content="Encuentra el regalo perfecto por categorías o con cuatro preguntas. Sin productos patrocinados: cada idea explica por qué funciona.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎁</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+:root {
+  --fondo: #fbf7f2;
+  --superficie: #ffffff;
+  --tinta: #221a2b;
+  --suave: #6b6175;
+  --linea: #e8e0d8;
+  --acento: #d9412b;
+  --acento-tinta: #ffffff;
+  --chip: #f3ede6;
+  --violeta: #7a4ee0; --violeta-f: #efe8ff;
+  --rojo: #d9412b; --rojo-f: #ffe7e2;
+  --ambar: #b7790a; --ambar-f: #fff3d6;
+  --azul: #2767d6; --azul-f: #e3edff;
+  --rosa: #c93c7d; --rosa-f: #ffe5f1;
+  --naranja: #d4620f; --naranja-f: #ffeadb;
+  --verde: #2c8a4b; --verde-f: #e1f5e7;
+  --turquesa: #0e8a8a; --turquesa-f: #dcf5f4;
+  --gris: #5b6472; --gris-f: #eceef1;
+  --sombra: 0 1px 2px rgb(40 20 50 / 6%), 0 6px 20px rgb(40 20 50 / 6%);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --fondo: #16121b; --superficie: #211b28; --tinta: #f1ebf5; --suave: #aba2b3; --linea: #362d3f;
+    --acento: #ff7a5c; --acento-tinta: #1b0f0b; --chip: #2c2434;
+    --violeta: #b596ff; --violeta-f: #2e2447;
+    --rojo: #ff8a70; --rojo-f: #3f211c;
+    --ambar: #f2bd4d; --ambar-f: #3a2e12;
+    --azul: #86adff; --azul-f: #1c2a47;
+    --rosa: #ff8cc0; --rosa-f: #43203a;
+    --naranja: #ffa266; --naranja-f: #402818;
+    --verde: #6fd594; --verde-f: #173424;
+    --turquesa: #5fd9d6; --turquesa-f: #113535;
+    --gris: #b3bac6; --gris-f: #2b2f37;
+    --sombra: 0 1px 2px rgb(0 0 0 / 30%), 0 6px 20px rgb(0 0 0 / 25%);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --fondo: #16121b; --superficie: #211b28; --tinta: #f1ebf5; --suave: #aba2b3; --linea: #362d3f;
+  --acento: #ff7a5c; --acento-tinta: #1b0f0b; --chip: #2c2434;
+  --violeta: #b596ff; --violeta-f: #2e2447;
+  --rojo: #ff8a70; --rojo-f: #3f211c;
+  --ambar: #f2bd4d; --ambar-f: #3a2e12;
+  --azul: #86adff; --azul-f: #1c2a47;
+  --rosa: #ff8cc0; --rosa-f: #43203a;
+  --naranja: #ffa266; --naranja-f: #402818;
+  --verde: #6fd594; --verde-f: #173424;
+  --turquesa: #5fd9d6; --turquesa-f: #113535;
+  --gris: #b3bac6; --gris-f: #2b2f37;
+  --sombra: 0 1px 2px rgb(0 0 0 / 30%), 0 6px 20px rgb(0 0 0 / 25%);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0; background: var(--fondo); color: var(--tinta);
+  font: 16px/1.5 Figtree, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 { font-family: 'Bricolage Grotesque', Figtree, sans-serif; line-height: 1.1; margin: 0; }
+button { font: inherit; color: inherit; cursor: pointer; }
+a { color: inherit; }
+.envoltura { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
+
+header.barra {
+  position: sticky; top: 0; z-index: 10;
+  background: color-mix(in srgb, var(--fondo) 88%, transparent);
+  backdrop-filter: blur(10px); border-bottom: 1px solid var(--linea);
+}
+header.barra .envoltura { display: flex; align-items: center; gap: 12px; height: 56px; }
+.logo { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 22px; text-decoration: none; }
+.logo span { color: var(--acento); }
+header nav { margin-left: auto; display: flex; gap: 4px; }
+header nav a {
+  text-decoration: none; font-weight: 600; font-size: 14px; padding: 6px 10px; border-radius: 999px;
+}
+header nav a:hover { background: var(--chip); }
+#contador-lista {
+  display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px;
+  border-radius: 999px; background: var(--acento); color: var(--acento-tinta); font-size: 12px; margin-left: 4px;
+}
+#contador-lista:empty { display: none; }
+
+.portada { padding: 56px 0 32px; }
+.portada h1 { font-size: clamp(38px, 7vw, 72px); font-weight: 800; letter-spacing: -0.02em; max-width: 14ch; }
+.portada h1 em { font-style: normal; color: var(--acento); }
+.portada p { font-size: 19px; color: var(--suave); max-width: 52ch; margin: 18px 0 26px; }
+.boton {
+  display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: 999px;
+  padding: 12px 20px; font-weight: 700; text-decoration: none;
+  background: var(--acento); color: var(--acento-tinta);
+}
+.boton.secundario { background: var(--chip); color: var(--tinta); }
+.acciones { display: flex; flex-wrap: wrap; gap: 10px; }
+.sellos { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 26px; color: var(--suave); font-size: 14px; }
+.sellos b { color: var(--tinta); }
+
+section { padding: 36px 0; }
+.cabeza { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
+.cabeza h2 { font-size: clamp(26px, 4vw, 36px); }
+.cabeza p { margin: 6px 0 0; color: var(--suave); }
+
+.categorias { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.categoria {
+  --c: var(--gris); --cf: var(--gris-f);
+  text-align: left; border: 2px solid transparent; border-radius: 20px; padding: 18px;
+  background: var(--cf); display: grid; gap: 6px; transition: transform .15s, border-color .15s;
+}
+.categoria:hover { transform: translateY(-2px); }
+.categoria[aria-pressed="true"] { border-color: var(--c); }
+.categoria .emoji { font-size: 34px; line-height: 1; }
+.categoria h3 { font-size: 21px; color: var(--c); }
+.categoria p { margin: 0; font-size: 14px; color: var(--tinta); opacity: .8; }
+.categoria small { font-weight: 700; font-size: 12px; color: var(--c); }
+.categoria[data-color="violeta"] { --c: var(--violeta); --cf: var(--violeta-f); }
+.categoria[data-color="rojo"] { --c: var(--rojo); --cf: var(--rojo-f); }
+.categoria[data-color="ambar"] { --c: var(--ambar); --cf: var(--ambar-f); }
+.categoria[data-color="azul"] { --c: var(--azul); --cf: var(--azul-f); }
+.categoria[data-color="rosa"] { --c: var(--rosa); --cf: var(--rosa-f); }
+.categoria[data-color="naranja"] { --c: var(--naranja); --cf: var(--naranja-f); }
+.categoria[data-color="verde"] { --c: var(--verde); --cf: var(--verde-f); }
+.categoria[data-color="turquesa"] { --c: var(--turquesa); --cf: var(--turquesa-f); }
+.categoria[data-color="gris"] { --c: var(--gris); --cf: var(--gris-f); }
+
+.buscador { display: grid; grid-template-columns: 320px 1fr; gap: 24px; align-items: start; }
+@media (max-width: 860px) { .buscador { grid-template-columns: 1fr; } }
+form.test {
+  background: var(--superficie); border: 1px solid var(--linea); border-radius: 20px;
+  padding: 18px; box-shadow: var(--sombra); display: grid; gap: 18px;
+  position: sticky; top: 72px;
+}
+@media (max-width: 860px) { form.test { position: static; } }
+fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+legend { font-weight: 700; font-size: 14px; margin-bottom: 8px; padding: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips label { position: relative; }
+.chips input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.chips span {
+  display: inline-block; padding: 6px 12px; border-radius: 999px; background: var(--chip);
+  font-size: 14px; font-weight: 500; border: 1px solid transparent; user-select: none;
+}
+.chips input:checked + span { background: var(--tinta); color: var(--fondo); }
+.chips input:focus-visible + span { outline: 2px solid var(--acento); outline-offset: 2px; }
+.interruptor { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; cursor: pointer; }
+.interruptor input { width: 18px; height: 18px; accent-color: var(--acento); margin: 2px 0 0; flex: none; }
+.interruptor small { display: block; color: var(--suave); }
+.limpiar { background: none; border: 0; color: var(--suave); text-decoration: underline; padding: 0; font-size: 14px; justify-self: start; }
+
+.estado { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 14px; color: var(--suave); }
+.estado b { color: var(--tinta); }
+.filtro-cat {
+  display: inline-flex; align-items: center; gap: 6px; border: 0; border-radius: 999px;
+  padding: 4px 10px; background: var(--chip); font-weight: 600; font-size: 14px;
+}
+.ideas { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.idea {
+  background: var(--superficie); border: 1px solid var(--linea); border-radius: 18px; padding: 16px;
+  display: flex; flex-direction: column; gap: 10px; box-shadow: var(--sombra);
+}
+.idea .tipo { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--suave); }
+.idea h3 { font-size: 19px; }
+.idea p { margin: 0; font-size: 15px; color: var(--suave); }
+.etiquetas { display: flex; flex-wrap: wrap; gap: 6px; }
+.etiqueta { font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 999px; background: var(--chip); }
+.etiqueta.motivo { background: var(--verde-f); color: var(--verde); }
+.pie-idea { margin-top: auto; display: flex; align-items: center; gap: 8px; padding-top: 6px; border-top: 1px dashed var(--linea); }
+.precio { font-weight: 700; margin-right: auto; }
+.icono {
+  border: 1px solid var(--linea); background: var(--superficie); border-radius: 999px;
+  padding: 6px 12px; font-size: 14px; font-weight: 600; text-decoration: none; white-space: nowrap;
+}
+.icono[aria-pressed="true"] { background: var(--acento); border-color: var(--acento); color: var(--acento-tinta); }
+.vacio { padding: 40px 20px; text-align: center; border: 2px dashed var(--linea); border-radius: 18px; color: var(--suave); }
+.mas { margin: 16px auto 0; display: block; }
+
+.claves { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; counter-reset: clave; }
+.clave { background: var(--superficie); border: 1px solid var(--linea); border-radius: 18px; padding: 18px; }
+.clave::before {
+  counter-increment: clave; content: counter(clave);
+  display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%;
+  background: var(--acento); color: var(--acento-tinta); font-weight: 800; margin-bottom: 10px;
+}
+.clave h3 { font-size: 18px; margin-bottom: 6px; }
+.clave p { margin: 0; color: var(--suave); font-size: 15px; }
+
+.pistas { background: var(--superficie); border: 1px solid var(--linea); border-radius: 20px; padding: 20px; }
+.pistas ul { margin: 0; padding-left: 20px; display: grid; gap: 8px; }
+.pistas li::marker { content: '🔎  '; }
+
+#lista-guardada .ideas { margin-top: 4px; }
+.aviso { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(100px);
+  background: var(--tinta); color: var(--fondo); padding: 10px 18px; border-radius: 999px; font-weight: 600;
+  transition: transform .25s; z-index: 20; max-width: calc(100% - 32px); }
+.aviso.visible { transform: translateX(-50%) translateY(0); }
+footer { padding: 32px 0 48px; color: var(--suave); font-size: 14px; border-top: 1px solid var(--linea); margin-top: 24px; }
+
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .categoria, .aviso { transition: none; } }
+</style>
+</head>
+<body>
+<header class="barra">
+  <div class="envoltura">
+    <a class="logo" href="#">acierto<span>.</span></a>
+    <nav>
+      <a href="#categorias">Categorías</a>
+      <a href="#buscar">Test</a>
+      <a href="#lista-guardada">Mi lista<span id="contador-lista"></span></a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="envoltura">
+    <section class="portada">
+      <h1>El regalo que <em>sí</em> va a usar.</h1>
+      <p>Elige una categoría o responde cuatro preguntas. Cada idea te dice por qué funciona, cuánto cuesta y si llega a tiempo.</p>
+      <div class="acciones">
+        <a class="boton" href="#buscar">Hacer el test →</a>
+        <a class="boton secundario" href="#categorias">Ver categorías</a>
+      </div>
+      <div class="sellos">
+        <span><b>0</b> productos patrocinados</span>
+        <span><b>Sin</b> registro</span>
+        <span>Ideas que se <b>usan</b>, no que se guardan en un cajón</span>
+      </div>
+    </section>
+
+    <section id="categorias">
+      <div class="cabeza">
+        <div>
+          <h2>¿Qué tipo de regalo buscas?</h2>
+          <p>Organizado por situación, no por “regalos para él / para ella”.</p>
+        </div>
+      </div>
+      <div class="categorias" id="lista-categorias"></div>
+    </section>
+
+    <section id="buscar">
+      <div class="cabeza">
+        <div>
+          <h2>Cuéntanos de esa persona</h2>
+          <p>Cuanto más marques, mejor afinamos. Todo es opcional.</p>
+        </div>
+      </div>
+      <div class="buscador">
+        <form class="test" id="test">
+          <fieldset>
+            <legend>¿Para quién es?</legend>
+            <div class="chips" id="relacion"></div>
+          </fieldset>
+          <fieldset>
+            <legend>Edad</legend>
+            <div class="chips" id="edad"></div>
+          </fieldset>
+          <fieldset>
+            <legend>Presupuesto máximo</legend>
+            <div class="chips" id="presupuesto"></div>
+          </fieldset>
+          <fieldset>
+            <legend>¿Cuándo lo necesitas?</legend>
+            <div class="chips" id="plazo"></div>
+          </fieldset>
+          <fieldset>
+            <legend>¿Qué le gusta?</legend>
+            <div class="chips" id="intereses"></div>
+          </fieldset>
+          <label class="interruptor">
+            <input type="checkbox" id="sin-cosas">
+            <span>No quiere más cosas en casa<small>Solo experiencias, cosas que se gastan y regalos de tiempo.</small></span>
+          </label>
+          <button type="button" class="limpiar" id="limpiar">Empezar de nuevo</button>
+        </form>
+
+        <div>
+          <div class="estado" id="estado" aria-live="polite"></div>
+          <div class="ideas" id="resultados"></div>
+          <button type="button" class="boton secundario mas" id="ver-mas" hidden>Ver más ideas</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="claves">
+      <div class="cabeza">
+        <div>
+          <h2>Antes de comprar</h2>
+          <p>Lo que dicen los estudios sobre regalar y lo que repite la gente en los foros.</p>
+        </div>
+      </div>
+      <div class="claves">
+        <div class="clave">
+          <h3>Lo que pidió gana</h3>
+          <p>Quien recibe valora más lo que pidió que la sorpresa, y lo ve igual de pensado. Si tiene lista de deseos, úsala.</p>
+        </div>
+        <div class="clave">
+          <h3>Piensa en el mes siguiente, no en el momento de abrirlo</h3>
+          <p>Quien regala busca el “¡oh!” al abrirlo; quien lo recibe valora lo que usará durante meses.</p>
+        </div>
+        <div class="clave">
+          <h3>Mejor útil que demasiado concreto</h3>
+          <p>Lo muy personalizado a veces no se usa. Lo versátil, sí: la versión buena de algo que ya usa.</p>
+        </div>
+        <div class="clave">
+          <h3>Un plan antes que otro objeto</h3>
+          <p>A quien “lo tiene todo” le sobran cosas; un plan, algo que se gasta o tu tiempo, no.</p>
+        </div>
+        <div class="clave">
+          <h3>Llegar tarde no es un drama</h3>
+          <p>Quien regala sobrestima lo que molesta un regalo con retraso. Mejor bueno y tarde que malo y a tiempo.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="pistas">
+        <h2 style="font-size:24px;margin-bottom:12px">Cómo averiguar qué quiere sin preguntárselo</h2>
+        <ul>
+          <li>Fíjate en lo que tiene gastado o roto y no cambia: mochila, auriculares, sartén, cartera.</li>
+          <li>Apunta cada “me encantaría…” o “algún día haré…” en una nota del móvil durante el año.</li>
+          <li>Pregunta a su pareja, sus amigos o sus hermanos: suelen saberlo, y así podéis juntaros.</li>
+          <li>Mira qué se compra repetido (café, cremas, libros de un autor): ahí está la versión buena.</li>
+          <li>Revisa sus fotos y redes: los sitios donde vuelve y los planes que comparte.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="lista-guardada">
+      <div class="cabeza">
+        <div>
+          <h2>Mi lista</h2>
+          <p>Guarda ideas y compártelas con quien vaya a regalar contigo.</p>
+        </div>
+        <button type="button" class="boton" id="compartir" hidden>Copiar enlace de la lista</button>
+      </div>
+      <div class="ideas" id="guardadas"></div>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <div class="envoltura">
+    Acierto no cobra comisiones: los botones “Buscar” abren una búsqueda normal para que compares donde quieras.
+  </div>
+</footer>
+
+<div class="aviso" id="aviso" role="status"></div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
