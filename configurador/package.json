@@ -1,0 +1,11 @@
+{
+  "name": "nido-configurador",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Configurador web de Nido: diseña el corral según tu espacio y obtén la lista de piezas.",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "start": "npx --yes serve -l 5173 ."
+  }
+}
