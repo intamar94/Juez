@@ -176,3 +176,11 @@ test('verificarWebhook acepta firmas válidas y rechaza el resto', () => {
   assert.throws(() => verificarWebhook(cuerpo, `t=${t},v1=${firma}`, secreto, ahora + 10 * 60_000), /caducada/);
   assert.throws(() => verificarWebhook(cuerpo, undefined, secreto, ahora), /ausente/);
 });
+
+test('el demo sobrevive a otra instancia sin memoria del pedido', async () => {
+  const a = deps();
+  const { pedido } = await iniciar({ ideaId: 'botella-termo', comprador }, a);
+  const b = deps(); // otra instancia: simulador vacío
+  assert.equal((await cotizacion(pedido, b)).estado, 'lista');
+  assert.deepEqual(await alPagar({ ryeId: pedido, pagoId: null, pagado: null }, deps()), { estado: 'comprando' });
+});
