@@ -545,4 +545,116 @@ export const IDEAS = [
     intereses: ['plantas'], categorias: ['compromiso', 'poco-dinero', 'ultima-hora'],
     busqueda: 'planta interior fácil cuidado',
   },
+
+  {
+    id:'kit-barista', nombre:'Kit para preparar café como un barista', porque:'Para quien convierte preparar café en un pequeño ritual y disfruta perfeccionando cada detalle.', precio:[25,90], plazo:'dias', tipo:'objeto', intereses:['cafe'], categorias:['su-obsesion','mejora-diaria'], busqueda:'kit barista café especialidad',
+  },
+  {
+    id:'clase-cocina', nombre:'Clase de cocina de una especialidad', porque:'Añade técnica y experiencia sin regalar otro utensilio a una cocina ya equipada.', precio:[35,120], plazo:'hoy', tipo:'experiencia', intereses:['cocina'], categorias:['experiencias','su-obsesion'], busqueda:'clase cocina experiencia',
+  },
+  {
+    id:'entrada-concierto', nombre:'Entrada para ver a un artista que le gusta', porque:'Si ya tiene suficientes cosas, un concierto crea un recuerdo que no ocupa espacio.', precio:[30,150], plazo:'hoy', tipo:'experiencia', intereses:['musica'], categorias:['experiencias','lo-tiene-todo'], busqueda:'entradas concierto música',
+  },
+  {
+    id:'album-viajes', nombre:'Álbum de un viaje compartido', porque:'Reúne fotografías y pequeñas historias para transformar un viaje pasado en un objeto con significado.', precio:[20,70], plazo:'semana', tipo:'objeto', intereses:['viajes','foto'], relaciones:['pareja','familia','amistad'], categorias:['con-historia'], busqueda:'álbum fotos personalizado viaje',
+  },
+  {
+    id:'mapa-recuerdos', nombre:'Mapa personalizado de lugares importantes', porque:'Marca dónde se conocieron, viajaron, vivieron o tuvieron momentos importantes.', precio:[20,80], plazo:'semana', tipo:'objeto', intereses:['viajes'], relaciones:['pareja','familia','amistad'], categorias:['con-historia','poco-dinero'], busqueda:'mapa personalizado lugares recuerdos',
+  },
+  {
+    id:'carta-futuro', nombre:'Carta para abrir en una fecha futura', porque:'El valor está en lo que dices y en el momento elegido para volver a leerla.', precio:[0,15], plazo:'hoy', tipo:'tiempo', relaciones:['pareja','familia','amistad'], categorias:['con-historia','poco-dinero'], busqueda:'carta personalizada regalo',
+  },
+  {
+    id:'recetario-familiar', nombre:'Recetario con las recetas de la familia', porque:'Conserva sabores, nombres e historias que normalmente solo existen en la memoria familiar.', precio:[10,60], plazo:'semana', tipo:'objeto', intereses:['cocina'], relaciones:['familia'], categorias:['con-historia'], busqueda:'recetario familiar personalizado',
+  },
+  {
+    id:'entrevista-recuerdos', nombre:'Entrevista grabada sobre su vida y recuerdos', porque:'Para alguien mayor o con una historia especial, conservar sus recuerdos puede ser el verdadero regalo.', precio:[0,30], plazo:'hoy', tipo:'tiempo', relaciones:['familia'], categorias:['con-historia','poco-dinero'], busqueda:'entrevista recuerdos historia familiar',
+  },
+  {
+    id:'kit-huerto', nombre:'Kit para cultivar algo en casa', porque:'Convierte el interés por las plantas en algo que puede cuidar, observar y cosechar.', precio:[20,70], plazo:'dias', tipo:'objeto', intereses:['plantas','naturaleza'], categorias:['su-obsesion','mejora-diaria'], busqueda:'kit huerto urbano cultivo',
+  },
+  {
+    id:'experiencia-naturaleza', nombre:'Excursión o actividad en la naturaleza', porque:'Para alguien que disfruta salir, vivir algo juntos puede valer más que otro accesorio.', precio:[20,100], plazo:'hoy', tipo:'experiencia', intereses:['naturaleza','deporte'], categorias:['experiencias','lo-tiene-todo'], busqueda:'experiencia naturaleza senderismo',
+  },
+  {
+    id:'clase-fotografia', nombre:'Taller de fotografía', porque:'Permite mejorar una afición que ya tiene en vez de regalarle simplemente otro accesorio.', precio:[30,150], plazo:'hoy', tipo:'experiencia', intereses:['foto'], categorias:['experiencias','su-obsesion'], busqueda:'taller fotografía curso',
+  },
+  {
+    id:'impresion-foto', nombre:'Fotografía favorita impresa en gran formato', porque:'Una imagen importante cambia cuando deja de estar escondida en el teléfono.', precio:[15,60], plazo:'dias', tipo:'objeto', intereses:['foto'], relaciones:['pareja','familia','amistad'], categorias:['con-historia','mejora-diaria'], busqueda:'impresión fotografía gran formato',
+  },
+  {
+    id:'kit-astronomia', nombre:'Experiencia o kit para observar el cielo', porque:'Para una persona curiosa, convierte una noche normal en una actividad para explorar y aprender.', precio:[25,150], plazo:'dias', tipo:'objeto', intereses:['naturaleza','tecnologia'], categorias:['su-obsesion','experiencias'], busqueda:'kit astronomía observación estrellas',
+  },
+  {
+    id:'escape-room', nombre:'Escape room para compartir', porque:'Funciona especialmente bien para grupos y personas que disfrutan resolviendo problemas.', precio:[20,45], plazo:'hoy', tipo:'experiencia', intereses:['juegos'], relaciones:['pareja','familia','amistad'], categorias:['experiencias','en-grupo'], busqueda:'escape room entradas',
+  },
+  {
+    id:'juego-cooperativo', nombre:'Juego de mesa cooperativo', porque:'En lugar de competir por ganar, todos tienen que resolver el mismo problema.', precio:[20,60], plazo:'dias', tipo:'objeto', intereses:['juegos'], categorias:['en-grupo','su-obsesion'], busqueda:'juego mesa cooperativo',
+  },
+  {
+    id:'rompecabezas-personalizado', nombre:'Puzzle hecho con una fotografía', porque:'Combina una actividad tranquila con una imagen que tiene significado.', precio:[20,50], plazo:'semana', tipo:'objeto', intereses:['juegos','foto'], categorias:['con-historia','poco-dinero'], busqueda:'puzzle personalizado fotografía',
+  },
+  {
+    id:'curso-online-profesional', nombre:'Curso para aprender una habilidad profesional nueva', porque:'Puede ser más útil que otro objeto cuando la persona disfruta aprendiendo o está cambiando de etapa.', precio:[15,150], plazo:'hoy', tipo:'digital', intereses:['tecnologia','foto','manualidades'], categorias:['ultima-hora','mejora-diaria'], busqueda:'curso online habilidad profesional',
+  },
+  {
+    id:'libro-profesional', nombre:'Libro especializado de su profesión', porque:'Un buen libro de referencia puede resultar mucho más personal que un regalo genérico.', precio:[15,70], plazo:'dias', tipo:'objeto', intereses:['lectura','tecnologia','cocina','naturaleza'], categorias:['su-obsesion','mejora-diaria'], busqueda:'libro especializado profesional',
+  },
+  {
+    id:'cuaderno-proyecto', nombre:'Cuaderno de calidad para sus proyectos', porque:'Para personas que siempre están planeando, diseñando, dibujando o construyendo cosas.', precio:[10,40], plazo:'dias', tipo:'objeto', intereses:['tecnologia','manualidades'], categorias:['mejora-diaria','poco-dinero'], busqueda:'cuaderno premium proyectos',
+  },
+  {
+    id:'experiencia-aviacion', nombre:'Experiencia relacionada con aviación', porque:'Para un piloto o aficionado a volar, vivir algo distinto puede ser más interesante que otro accesorio.', precio:[40,250], plazo:'hoy', tipo:'experiencia', intereses:['viajes','tecnologia'], categorias:['experiencias','su-obsesion','lo-tiene-todo'], busqueda:'experiencia aviación vuelo simulador',
+  },
+  {
+    id:'taller-bricolaje', nombre:'Taller práctico para aprender un oficio', porque:'Para quien disfruta arreglando cosas, aprender una técnica nueva puede ser mejor que acumular herramientas.', precio:[30,150], plazo:'hoy', tipo:'experiencia', intereses:['manualidades'], categorias:['experiencias','su-obsesion'], busqueda:'taller bricolaje carpintería',
+  },
+  {
+    id:'video-mensajes', nombre:'Vídeo con mensajes de varias personas', porque:'Ideal cuando varias personas quieren regalar algo juntas aunque estén lejos.', precio:[0,30], plazo:'hoy', tipo:'digital', relaciones:['familia','amistad'], categorias:['con-historia','en-grupo','poco-dinero'], busqueda:'video felicitación personalizado',
+  },
+  {
+    id:'cena-tematica', nombre:'Cena temática preparada en casa', porque:'Puedes construir la experiencia alrededor de un país, una película, un viaje o una época.', precio:[20,70], plazo:'hoy', tipo:'tiempo', intereses:['cocina','viajes','cine'], relaciones:['pareja','familia','amistad'], categorias:['experiencias','con-historia','poco-dinero'], busqueda:'cena temática en casa',
+  },
+  {
+    id:'dia-sin-decisiones', nombre:'Un día organizado completamente para esa persona', porque:'Tú resuelves horarios, comida y actividades para que simplemente tenga que disfrutar.', precio:[20,150], plazo:'hoy', tipo:'tiempo', relaciones:['pareja','familia','amistad'], categorias:['experiencias','con-historia'], busqueda:'día experiencia sorpresa',
+  },
+  {
+    id:'regalo-solidario', nombre:'Donación a una causa que le importe', porque:'Para alguien que no quiere objetos, el regalo puede representar algo en lo que realmente cree.', precio:[10,100], plazo:'hoy', tipo:'digital', categorias:['lo-tiene-todo','ultima-hora'], busqueda:'donación regalo causa',
+  },
+  {
+    id:'apadrinamiento', nombre:'Apadrinamiento simbólico de un animal o proyecto', porque:'Es un regalo con continuidad para quien conecta más con una causa que con las cosas.', precio:[20,80], plazo:'hoy', tipo:'digital', intereses:['naturaleza','mascotas'], categorias:['lo-tiene-todo','su-obsesion'], busqueda:'apadrinamiento animal regalo',
+  },
+  {
+    id:'retrato-mascota', nombre:'Ilustración personalizada de su mascota', porque:'Transforma una parte importante de su vida cotidiana en algo único.', precio:[20,100], plazo:'semana', tipo:'objeto', intereses:['mascotas','foto'], categorias:['con-historia'], busqueda:'retrato mascota personalizado',
+  },
+  {
+    id:'experiencia-bienestar', nombre:'Experiencia de bienestar', porque:'Para alguien que necesita parar, reservar tiempo para sí mismo puede ser más útil que otro objeto.', precio:[30,150], plazo:'hoy', tipo:'experiencia', intereses:['bienestar'], categorias:['experiencias','lo-tiene-todo'], busqueda:'experiencia spa bienestar',
+  },
+  {
+    id:'accesorio-viaje-util', nombre:'Accesorio de viaje que resuelve un problema concreto', porque:'El mejor regalo para quien viaja mucho puede ser quitarle una pequeña molestia.', precio:[15,70], plazo:'dias', tipo:'objeto', intereses:['viajes'], categorias:['mejora-diaria','su-obsesion'], busqueda:'accesorio viaje útil organizador',
+  },
+  {
+    id:'guia-personalizada-viaje', nombre:'Guía personalizada para su próximo viaje', porque:'Puedes mezclar lugares que quiere visitar con recomendaciones que sabes que le gustan.', precio:[0,40], plazo:'hoy', tipo:'digital', intereses:['viajes','cocina','foto'], categorias:['con-historia','poco-dinero'], busqueda:'guía viaje personalizada',
+  },
+  {
+    id:'capsula-tiempo', nombre:'Cápsula del tiempo para abrir dentro de un año', porque:'Convierte el presente en una promesa futura y funciona especialmente bien en etapas importantes.', precio:[5,30], plazo:'hoy', tipo:'tiempo', relaciones:['pareja','familia','amistad'], categorias:['con-historia','poco-dinero'], busqueda:'cápsula tiempo regalo',
+  },
+  {
+    id:'kit-nuevo-trabajo', nombre:'Kit para empezar una nueva etapa laboral', porque:'Combina algo útil para el día a día con un mensaje que marque el comienzo de una etapa.', precio:[20,80], plazo:'dias', tipo:'objeto', relaciones:['familia','amistad','trabajo'], categorias:['mejora-diaria','con-historia'], busqueda:'kit nuevo trabajo regalo',
+  },
+  {
+    id:'celebracion-graduacion', nombre:'Experiencia para celebrar una graduación', porque:'Después de meses de estudio, celebrar haciendo algo memorable puede tener más sentido que otro objeto.', precio:[30,150], plazo:'hoy', tipo:'experiencia', categorias:['experiencias','con-historia'], busqueda:'experiencia celebración graduación',
+  },
+  {
+    id:'regalo-jubilacion-historia', nombre:'Libro de recuerdos de su vida laboral', porque:'Una jubilación permite convertir años de trabajo, compañeros y anécdotas en una historia que conservar.', precio:[15,80], plazo:'semana', tipo:'objeto', relaciones:['trabajo','familia'], categorias:['con-historia'], busqueda:'libro recuerdos jubilación personalizado',
+  },
+  {
+    id:'amigo-secreto-comida', nombre:'Pequeño pack de su comida favorita', porque:'Para alguien que conoces poco, una preferencia concreta reduce mucho el riesgo de fallar.', precio:[10,30], plazo:'hoy', tipo:'consumible', intereses:['cocina','cafe','bebidas'], relaciones:['trabajo','amistad'], categorias:['compromiso','poco-dinero','ultima-hora'], busqueda:'pack gourmet regalo',
+  },
+  {
+    id:'actividad-ninos-familia', nombre:'Actividad para hacer en familia', porque:'Para niños suele funcionar mejor regalar una historia que vivir juntos que sumar otro juguete.', precio:[15,80], plazo:'hoy', tipo:'experiencia', edades:['nino'], relaciones:['familia'], categorias:['peques','experiencias'], busqueda:'actividad familiar niños',
+  },
+  {
+    id:'cuento-personalizado', nombre:'Cuento personalizado con la persona como protagonista', porque:'Es especialmente memorable para niños y también puede convertirse en un regalo familiar.', precio:[15,60], plazo:'semana', tipo:'objeto', edades:['nino','joven'], categorias:['peques','con-historia'], busqueda:'cuento personalizado nombre',
+  },
 ];
