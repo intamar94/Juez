@@ -19,19 +19,16 @@ Semana        1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16
 
 ## 1. Prototipo físico (semanas 1–4)
 
-Objetivo: un corral contra la pared armado y probado en casa.
-
+Objetivo: una curva contra la pared armada en casa y elegida la unión definitiva.
 Todo lo que hay que pedir y comprar está en [`docs/fabricacion.md`](fabricacion.md).
 
-- [ ] Encargar **un solo nodo de 90°** de prueba y comprobar el encaje con el poste y un trozo de triplex de 18 mm
-- [ ] Encargar el resto de las piezas impresas: 4 nodos de 90°, 4 anclajes y las tapas
-- [ ] Cotizar y cortar 3 paneles (2 × 60 cm y 1 × 80 cm) en un taller CNC
-- [ ] Comprar 2 postes de Ø40 mm × 67 cm, los pernos de coche M6 × 40 con tuerca ciega y los tornillos de pared
-- [ ] Armar y medir: holgura del panel en el nodo, que el poste no gire y que no queden huecos
-- [ ] Hacer las pruebas de `docs/fabricacion.md` (sección 4)
-- [ ] Anotar qué falla y ajustar `cad/nido.scad` (holgura, grosor de pared, largo del brazo)
+- [ ] Encargar **un solo anillo** de prueba y comprobar que gira suave en el poste y que el panel entra en la horquilla
+- [ ] Cotizar y cortar 5 paneles (una lámina de triplex) en un taller CNC
+- [ ] Encargar 12 anillos y 6 tapas; comprar postes, pernos, correas, abrazaderas y rellenos
+- [ ] Armar la curva con las tres uniones y hacer las pruebas (sección 5)
+- [ ] Elegir la unión definitiva y ajustar `cad/nido.scad`
 
-**Resultado:** fotos, lista de ajustes y segunda versión de las piezas.
+**Resultado:** fotos, comparación de uniones y segunda versión de las piezas.
 
 ## 2. Seguridad y certificación (semanas 3–12)
 

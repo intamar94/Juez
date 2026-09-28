@@ -2,18 +2,17 @@
 
 Corral modular para bebés que se adapta al espacio de la casa y crece con el niño.
 
-Con unas pocas piezas estándar (paneles, postes, nodos de unión y anclajes a pared) se arma
-un corral de cualquier forma: rectángulo, contra una pared, en una esquina, en L o en
-hexágono. Sobre ese sistema se enganchan módulos según la edad (espejo, texturas, luces,
-juegos, estantes) y, cuando el niño crece, las mismas piezas se reconfiguran como divisor
-de ambientes o rincón de lectura.
+Los paneles de madera giran libremente alrededor de postes redondos, así que el corral
+toma la forma que pida el espacio: curvas contra la pared, rincones redondeados, islas o
+hexágonos. Se arma sin herramientas y cada adaptación (puerta, espejo, luz, pizarra, bordes
+con forma) es un panel que se cambia por otro sacando el poste.
 
 ## Qué hay en este repositorio
 
 | Carpeta | Contenido |
 |---|---|
-| [`cad/`](cad/) | Modelos paramétricos en OpenSCAD: nodos, anclajes, tapas, enganche de módulos, módulo de luz y paneles (DXF para CNC) |
-| [`configurador/`](configurador/) | Web para diseñar el corral según el espacio: plano, lista de piezas, costo y horas de impresión |
+| [`cad/`](cad/) | Modelos paramétricos en OpenSCAD: paneles con distintos bordes y tipos (DXF para CNC), anillos de unión, tapas, caja de luz y vista de ensamble |
+| [`configurador/`](configurador/) | Web para diseñar el corral de forma libre arrastrando los postes: plano, ángulos, avisos de seguridad, lista de piezas y costo |
 | [`docs/`](docs/) | Concepto, lo que dicen las reseñas del mercado, requisitos de seguridad, hoja de ruta y [plan hasta la primera venta](docs/plan-lanzamiento.md) |
 
 ## Empezar
@@ -34,12 +33,13 @@ npm start                # abre http://localhost:5173
 
 ## Cómo está pensado el sistema
 
-- **Paneles** de contrachapado de 18 mm en 40, 60 y 80 cm, cortados en CNC. Barrotes con
-  50 mm de separación y 65 cm de alto.
-- **Postes** de madera de Ø40 mm a altura completa, para que no queden huecos entre paneles.
-- **Nodos impresos** (dos por poste) que fijan los paneles con pernos M6 al ángulo que haga
-  falta: 90°, 120°, 135°, 180°, 270° o en T.
-- **Anclajes a pared**: el corral se vuelve parte de la habitación y no se puede empujar.
-- **Enganche universal** sobre el riel superior: cualquier módulo nuevo se atornilla a él.
+- **Paneles** de triplex de 18 mm en 30, 60 y 80 cm (entre ejes de poste), cortados en CNC.
+  Barrotes con 50 mm de separación y 65 cm de alto.
+- **Postes** de madera de Ø40 mm. El panel gira alrededor del poste a 2 mm de distancia,
+  a cualquier ángulo.
+- **Uniones**: 4 por panel, a alturas distintas en cada extremo para que dos paneles no
+  choquen. Hay tres variantes en prueba: anillo impreso, correa de cinta y abrazadera de ferretería.
+- **Anclaje a pared** con abrazaderas de tubo en los extremos de un corral abierto.
 
-Más detalle en [`docs/concepto.md`](docs/concepto.md).
+Más detalle en [`docs/concepto.md`](docs/concepto.md). Para fabricar el prototipo, ver
+[`docs/fabricacion.md`](docs/fabricacion.md).

@@ -1,292 +1,233 @@
 // Lógica del configurador de Nido (sin DOM, para poder probarla con `node --test`).
 // Medidas en milímetros. Debe coincidir con cad/nido.scad.
+//
+// El corral es una cadena de paneles unidos por postes redondos. Cada panel gira
+// libremente alrededor del poste, así que su dirección (rumbo, en grados) es libre.
 
 export const SISTEMA = {
-  anchosPanel: [400, 600, 800],
-  posteDiam: 40,
-  anclajeGrosor: 6,
-  anchoPuerta: 800,
+  modulos: [300, 600, 800], // distancia entre ejes de poste
+  bordeEje: 22, // del eje del poste al canto del panel
+  anguloMin: 60, // ángulo interior mínimo entre dos paneles (si no, chocan las uniones)
+  toleranciaCierre: 40, // si el último poste queda a menos de esto del primero, el corral se cierra
+  toleranciaPared: 80, // distancia máxima de un extremo anclado a la pared
 };
 
-// Estimaciones de costo y tiempo por pieza (USD, horas de impresión, gramos de PETG).
-// Gramos medidos sobre los STL (PETG 1,27 g/cm³, ~70 % del volumen macizo con 4 perímetros
-// y 30 % de relleno). Precios en USD de referencia: sustituir por cotizaciones reales.
-export const COSTOS = {
-  panel: { 400: 28, 600: 38, 800: 48 },
-  puerta: 75,
-  poste: 12,
-  pernoM6: 0.6,
-  filamentoPorKg: 25,
-  impresas: {
-    nodo: { gramos: 120, horas: 5.5 },
-    anclaje: { gramos: 57, horas: 2.5 },
-    tapa: { gramos: 30, horas: 1.5 },
-  },
+// Precios de referencia en pesos colombianos (COP) para el prototipo.
+// Sustituir por cotizaciones reales (ver docs/plan-lanzamiento.md, paso 3).
+export const PRECIOS = {
+  panel: { 300: 45000, 600: 75000, 800: 95000 },
+  bordeConForma: 10000,
+  poste: 18000,
+  tapa: 6000,
+  relleno: 4000,
+  abrazaderaPared: 9000,
+  perno: 1500,
+  inserto: 1500,
 };
 
-// Diferencia máxima aceptable entre el largo pedido y el real de un lado (mm).
-export const TOLERANCIA_LADO = 60;
-
-export const FORMAS = {
-  rectangulo: 'Rectángulo (4 lados)',
-  pared: 'Contra una pared (3 lados)',
-  esquina: 'En una esquina (2 lados)',
-  L: 'En forma de L',
-  hexagono: 'Hexágono',
+export const BORDES = {
+  recto: 'Recto',
+  olas: 'Olas',
+  montanas: 'Montañas',
+  nubes: 'Nubes',
 };
 
-// Módulos por edad (meses). Todos usan el enganche universal.
-export const MODULOS = [
-  { id: 'espejo', nombre: 'Panel espejo irrompible', desde: 0, hasta: 12, precio: 22 },
-  { id: 'texturas', nombre: 'Panel sensorial de texturas', desde: 0, hasta: 18, precio: 18 },
-  { id: 'luz', nombre: 'Luz nocturna cálida (USB, sin pilas)', desde: 0, hasta: 60, precio: 29 },
-  { id: 'barra', nombre: 'Barra para pararse', desde: 6, hasta: 24, precio: 20 },
-  { id: 'engranajes', nombre: 'Panel de engranajes', desde: 9, hasta: 36, precio: 24 },
-  { id: 'abaco', nombre: 'Ábaco de colores', desde: 12, hasta: 36, precio: 19 },
-  { id: 'luces-armables', nombre: 'Luces armables (piezas que encienden al conectarlas)', desde: 18, hasta: 72, precio: 45 },
-  { id: 'pizarra', nombre: 'Tablero para dibujar', desde: 18, hasta: 72, precio: 26 },
-  { id: 'estante', nombre: 'Estante bajo para libros', desde: 24, hasta: 96, precio: 32 },
-];
+// Tipos de panel. Todo lo que no es "barrotes" es una adaptación que se vende aparte.
+export const TIPOS = {
+  barrotes: { nombre: 'Barrotes', extra: 0, desde: 0, hasta: 96 },
+  puerta: { nombre: 'Puerta con cierre', extra: 60000, desde: 0, hasta: 96, modulos: [800] },
+  espejo: { nombre: 'Ventana con espejo', extra: 45000, desde: 0, hasta: 18, modulos: [600, 800] },
+  luz: { nombre: 'Ventana con luz', extra: 85000, desde: 0, hasta: 72, modulos: [600, 800] },
+  colores: { nombre: 'Ventana de colores', extra: 35000, desde: 6, hasta: 36, modulos: [600, 800] },
+  pizarra: { nombre: 'Pizarra', extra: 25000, desde: 18, hasta: 96, modulos: [600, 800] },
+};
 
-export function modulosParaEdad(meses) {
-  return MODULOS.filter((m) => meses >= m.desde && meses <= m.hasta);
+export const UNIONES = {
+  anillo: { nombre: 'Anillo impreso', precio: 7000, pernos: 1, insertos: 0 },
+  correa: { nombre: 'Correa de cinta', precio: 5000, pernos: 1, insertos: 0 },
+  abrazadera: { nombre: 'Abrazadera de ferretería', precio: 9000, pernos: 0, insertos: 1 },
+};
+
+export function tiposParaEdad(meses) {
+  return Object.entries(TIPOS)
+    .filter(([id, t]) => id !== 'barrotes' && meses >= t.desde && meses <= t.hasta)
+    .map(([id]) => id);
 }
 
-// Vértices de la forma. `cerrada` indica si el último vértice se une con el primero;
-// si no, los extremos van anclados a la pared.
-export function vertices(forma, ancho, fondo) {
-  const A = ancho;
-  const F = fondo;
-  switch (forma) {
-    case 'rectangulo':
-      return { puntos: [[0, 0], [A, 0], [A, F], [0, F]], cerrada: true };
-    case 'pared':
-      return { puntos: [[0, 0], [0, F], [A, F], [A, 0]], cerrada: false };
-    case 'esquina':
-      // la esquina de la habitación (0,0) cierra el área junto con las dos paredes
-      return { puntos: [[0, F], [A, F], [A, 0]], cerrada: false, cierre: [[0, 0]] };
-    case 'L':
-      return {
-        puntos: [[0, 0], [A, 0], [A, F / 2], [A / 2, F / 2], [A / 2, F], [0, F]],
-        cerrada: true,
-      };
-    case 'hexagono': {
-      const r = A / 2;
-      const puntos = [];
-      for (let i = 0; i < 6; i++) {
-        const a = (Math.PI / 3) * i;
-        puntos.push([r + r * Math.cos(a), r * Math.sin(Math.PI / 3) + r * Math.sin(a)]);
-      }
-      return { puntos, cerrada: true };
-    }
-    default:
-      throw new Error(`Forma desconocida: ${forma}`);
+export function tipoValido(tipo, modulo) {
+  const t = TIPOS[tipo];
+  return !!t && (!t.modulos || t.modulos.includes(modulo));
+}
+
+const rad = (g) => (g * Math.PI) / 180;
+const grados = (r) => (r * 180) / Math.PI;
+
+// Diferencia de rumbo normalizada a (-180, 180].
+export function giro(rumboA, rumboB) {
+  let d = (((rumboB - rumboA) % 360) + 360) % 360;
+  if (d > 180) d -= 360;
+  return d;
+}
+
+// Posiciones de los postes a partir del inicio y de los rumbos de cada panel.
+export function postes(inicio, tramos) {
+  const pts = [inicio];
+  for (const t of tramos) {
+    const [x, y] = pts[pts.length - 1];
+    pts.push([x + t.modulo * Math.cos(rad(t.rumbo)), y + t.modulo * Math.sin(rad(t.rumbo))]);
   }
+  return pts;
 }
 
-// Longitud real de un lado con esta combinación de paneles.
-// Cada panel va entre dos postes; en un extremo con pared hay un anclaje en vez de poste.
-function largoReal(paneles, extremosPared) {
-  const { posteDiam, anclajeGrosor } = SISTEMA;
-  const suma = paneles.reduce((a, b) => a + b, 0);
-  const postesIntermedios = paneles.length - 1;
-  const extremos = (2 - extremosPared) * (posteDiam / 2) + extremosPared * anclajeGrosor;
-  return suma + postesIntermedios * posteDiam + extremos;
+// Rumbo para que el panel que sale de `desde` apunte hacia `hacia`.
+export function rumboHacia(desde, hacia) {
+  return grados(Math.atan2(hacia[1] - desde[1], hacia[0] - desde[0]));
 }
 
-// Elige la combinación de paneles que más se acerca al largo pedido
-// (a igualdad, la que usa menos paneles).
-export function llenarLado(largo, extremosPared = 0, anchos = SISTEMA.anchosPanel) {
-  let mejor = null;
-  const ordenados = [...anchos].sort((a, b) => b - a);
-  const maxPaneles = Math.ceil(largo / Math.min(...anchos)) + 1;
-
-  function probar(actual, desde) {
-    if (actual.length > 0) {
-      const real = largoReal(actual, extremosPared);
-      const error = Math.abs(real - largo);
-      if (
-        !mejor ||
-        error < mejor.error - 0.5 ||
-        (Math.abs(error - mejor.error) <= 0.5 && actual.length < mejor.paneles.length)
-      ) {
-        mejor = { paneles: [...actual], largoReal: real, error };
-      }
-    }
-    if (actual.length >= maxPaneles) return;
-    for (let i = desde; i < ordenados.length; i++) {
-      actual.push(ordenados[i]);
-      probar(actual, i);
-      actual.pop();
-    }
-  }
-
-  probar([], 0);
-  return mejor;
-}
-
-function anguloInterior(prev, actual, sig, antihorario) {
-  const a1 = Math.atan2(prev[1] - actual[1], prev[0] - actual[0]);
-  const a2 = Math.atan2(sig[1] - actual[1], sig[0] - actual[0]);
-  let ang = ((a2 - a1) * 180) / Math.PI;
-  ang = ((ang % 360) + 360) % 360;
-  return Math.round(antihorario ? 360 - ang : ang);
-}
-
-function areaFirmada(puntos) {
+function areaPoligono(pts) {
   let s = 0;
-  for (let i = 0; i < puntos.length; i++) {
-    const [x1, y1] = puntos[i];
-    const [x2, y2] = puntos[(i + 1) % puntos.length];
+  for (let i = 0; i < pts.length; i++) {
+    const [x1, y1] = pts[i];
+    const [x2, y2] = pts[(i + 1) % pts.length];
     s += x1 * y2 - x2 * y1;
   }
-  return s / 2;
+  return Math.abs(s) / 2;
 }
 
-// Calcula el diseño completo: lados, nodos, lista de piezas y costos.
-export function disenar({ forma, ancho, fondo, puerta = true, modulos = [] }) {
-  const { puntos, cerrada, cierre = [] } = vertices(forma, ancho, fondo);
-  const n = puntos.length;
-  const nLados = cerrada ? n : n - 1;
-  // en las formas abiertas, la pared (y la esquina, si la hay) cierra el polígono
-  const contorno = [...puntos, ...cierre];
-  const area = Math.abs(areaFirmada(contorno)) / 1e6;
-  const antihorario = areaFirmada(contorno) > 0;
+function distanciaPared([x, y], hab) {
+  return Math.min(x, y, hab.ancho - x, hab.fondo - y);
+}
 
-  const lados = [];
-  for (let i = 0; i < nLados; i++) {
-    const p = puntos[i];
-    const q = puntos[(i + 1) % n];
-    const largo = Math.hypot(q[0] - p[0], q[1] - p[1]);
-    const extremosPared = cerrada ? 0 : (i === 0 ? 1 : 0) + (i === nLados - 1 ? 1 : 0);
-    lados.push({ desde: p, hasta: q, largo, extremosPared, ...llenarLado(largo, extremosPared) });
+// Calcula el corral completo: postes, ángulos, avisos, lista de piezas y costos.
+export function disenar({ inicio, tramos, union = 'anillo', anclado = true, habitacion }) {
+  const n = tramos.length;
+  const pts = postes(inicio, tramos);
+  const hueco = n >= 3 ? Math.hypot(pts[n][0] - pts[0][0], pts[n][1] - pts[0][1]) : Infinity;
+  const cerrado = hueco <= SISTEMA.toleranciaCierre;
+  const nPostes = cerrado ? n : n + 1;
+  const avisos = [];
+
+  // Ángulo interior en cada poste compartido por dos paneles.
+  const angulos = [];
+  for (let i = 1; i < n; i++) {
+    angulos.push({ poste: i, angulo: Math.round(180 - Math.abs(giro(tramos[i - 1].rumbo, tramos[i].rumbo))) });
+  }
+  if (cerrado) {
+    angulos.push({ poste: 0, angulo: Math.round(180 - Math.abs(giro(tramos[n - 1].rumbo, tramos[0].rumbo))) });
+  }
+  const agudos = angulos.filter((a) => a.angulo < SISTEMA.anguloMin);
+  if (agudos.length) {
+    avisos.push(`${agudos.length === 1 ? 'Un ángulo es' : `${agudos.length} ángulos son`} menor de ${SISTEMA.anguloMin}°: las uniones de los paneles chocarían.`);
   }
 
-  // La puerta sustituye un panel de 800 en el lado más largo que lo tenga.
-  let ladoPuerta = -1;
-  if (puerta) {
-    let mejorLargo = -1;
-    lados.forEach((l, i) => {
-      if (l.paneles.includes(SISTEMA.anchoPuerta) && l.largo > mejorLargo) {
-        mejorLargo = l.largo;
-        ladoPuerta = i;
-      }
-    });
-    if (ladoPuerta === -1) {
-      // Ningún lado trae un panel de 800: probar a meterlo en el lado más largo,
-      // solo o seguido de otros paneles. Si así el lado queda descuadrado, no hay puerta.
-      const i = lados.reduce((m, l, k) => (l.largo > lados[m].largo ? k : m), 0);
-      const { largo, extremosPared } = lados[i];
-      const candidatos = [[SISTEMA.anchoPuerta]];
-      const resto = largo - SISTEMA.anchoPuerta - SISTEMA.posteDiam;
-      if (resto > 0) candidatos.push([SISTEMA.anchoPuerta, ...llenarLado(resto, extremosPared).paneles]);
-      const mejor = candidatos
-        .map((paneles) => {
-          const real = largoReal(paneles, extremosPared);
-          return { paneles, largoReal: real, error: Math.abs(real - largo) };
-        })
-        .sort((a, b) => a.error - b.error)[0];
-      if (mejor.error <= TOLERANCIA_LADO) {
-        lados[i] = { ...lados[i], ...mejor };
-        ladoPuerta = i;
-      }
+  tramos.forEach((t, i) => {
+    if (!tipoValido(t.tipo, t.modulo)) {
+      avisos.push(`El panel ${i + 1} (${TIPOS[t.tipo]?.nombre ?? t.tipo}) no existe en ${t.modulo / 10} cm.`);
     }
-  }
-  const puertaNoCabe = puerta && ladoPuerta === -1;
-
-  // Nodos: uno por vértice con poste, más uno de 180° entre paneles de un mismo lado.
-  const nodos = {};
-  const sumarNodo = (angulo, cantidad = 1) => {
-    nodos[angulo] = (nodos[angulo] || 0) + cantidad;
-  };
-  for (let i = 0; i < n; i++) {
-    const esExtremoPared = !cerrada && (i === 0 || i === n - 1);
-    if (esExtremoPared) continue;
-    const prev = puntos[(i - 1 + n) % n];
-    const sig = puntos[(i + 1) % n];
-    sumarNodo(anguloInterior(prev, puntos[i], sig, antihorario));
-  }
-  lados.forEach((l) => sumarNodo(180, l.paneles.length - 1));
-
-  const postes = Object.values(nodos).reduce((a, b) => a + b, 0);
-  const anclajes = cerrada ? 0 : 2;
-
-  const paneles = {};
-  lados.forEach((l, i) => {
-    l.paneles.forEach((w, k) => {
-      const esPuerta = i === ladoPuerta && k === l.paneles.indexOf(SISTEMA.anchoPuerta);
-      const clave = esPuerta ? 'puerta' : String(w);
-      paneles[clave] = (paneles[clave] || 0) + 1;
-    });
   });
 
+  if (habitacion) {
+    const fuera = pts.some(([x, y]) => x < -1 || y < -1 || x > habitacion.ancho + 1 || y > habitacion.fondo + 1);
+    if (fuera) avisos.push('Parte del corral queda fuera de la habitación.');
+    if (!cerrado && anclado && n > 0) {
+      const lejos = [pts[0], pts[n]].some((p) => distanciaPared(p, habitacion) > SISTEMA.toleranciaPared);
+      if (lejos) avisos.push('Un extremo no llega a la pared: acércalo o cierra el corral.');
+    }
+  }
+  if (!cerrado && !anclado) avisos.push('Un corral abierto tiene que ir anclado a la pared o cerrarse.');
+  if (!cerrado && hueco < 300) avisos.push(`Faltan ${Math.round(hueco / 10)} cm para cerrar el corral.`);
+
+  // Lista de piezas
   const piezas = [];
-  for (const w of SISTEMA.anchosPanel) {
-    if (paneles[w]) {
-      piezas.push({ nombre: `Panel ${w / 10} cm (CNC)`, cantidad: paneles[w], precio: COSTOS.panel[w] });
-    }
-  }
-  if (paneles.puerta) {
-    piezas.push({ nombre: 'Panel puerta 80 cm con cierre', cantidad: paneles.puerta, precio: COSTOS.puerta });
-  }
-  piezas.push({ nombre: `Poste Ø${SISTEMA.posteDiam} mm`, cantidad: postes, precio: COSTOS.poste });
+  const agregar = (nombre, cantidad, precio, extra = {}) => {
+    if (cantidad > 0) piezas.push({ nombre, cantidad, precio, ...extra });
+  };
 
-  const { impresas, filamentoPorKg } = COSTOS;
-  const precioImpresa = (tipo) => (impresas[tipo].gramos / 1000) * filamentoPorKg;
-  let horas = 0;
-  let gramos = 0;
-  for (const [angulo, cant] of Object.entries(nodos).sort((a, b) => a[0] - b[0])) {
-    piezas.push({
-      nombre: `Nodo ${angulo}° (impreso, 2 por poste)`,
-      cantidad: cant * 2,
-      precio: precioImpresa('nodo'),
-      impresa: 'nodo',
-    });
+  const grupos = new Map();
+  for (const t of tramos) {
+    const clave = `${t.modulo}|${t.tipo}|${t.borde}`;
+    grupos.set(clave, (grupos.get(clave) || 0) + 1);
   }
-  if (anclajes) {
-    piezas.push({
-      nombre: 'Anclaje a pared (impreso, 2 por extremo)',
-      cantidad: anclajes * 2,
-      precio: precioImpresa('anclaje'),
-      impresa: 'anclaje',
-    });
-  }
-  piezas.push({ nombre: 'Tapa decorativa (impresa)', cantidad: postes, precio: precioImpresa('tapa'), impresa: 'tapa' });
-
-  const totalPaneles = Object.values(paneles).reduce((a, b) => a + b, 0);
-  const pernos = totalPaneles * 4;
-  piezas.push({ nombre: 'Perno M6 con tuerca ciega', cantidad: pernos, precio: COSTOS.pernoM6 });
-
-  for (const p of piezas) {
-    if (p.impresa) {
-      horas += impresas[p.impresa].horas * p.cantidad;
-      gramos += impresas[p.impresa].gramos * p.cantidad;
-    }
+  for (const [clave, cantidad] of grupos) {
+    const [modulo, tipo, borde] = clave.split('|');
+    const precio = PRECIOS.panel[modulo] + (TIPOS[tipo]?.extra ?? 0) + (borde === 'recto' ? 0 : PRECIOS.bordeConForma);
+    const forma = borde === 'recto' ? '' : `, borde de ${BORDES[borde].toLowerCase()}`;
+    agregar(`Panel ${modulo / 10} cm · ${TIPOS[tipo]?.nombre ?? tipo}${forma}`, cantidad, precio, { adaptacion: tipo !== 'barrotes' });
   }
 
-  const elegidos = MODULOS.filter((m) => modulos.includes(m.id));
-  for (const m of elegidos) {
-    piezas.push({ nombre: `Módulo: ${m.nombre}`, cantidad: 1, precio: m.precio });
-  }
+  const u = UNIONES[union];
+  const nUniones = 4 * n;
+  agregar('Poste Ø40 mm × 67 cm', nPostes, PRECIOS.poste);
+  agregar(`${u.nombre} (4 por panel)`, nUniones, u.precio, { impresa: union === 'anillo' ? 'anillo' : null });
+  agregar('Relleno para poste de extremo (tubo PVC 1½")', cerrado ? 0 : 4, PRECIOS.relleno);
+  agregar('Abrazadera de pared para tubo de 40 mm', !cerrado && anclado ? 4 : 0, PRECIOS.abrazaderaPared);
+  agregar('Tapa de poste (impresa)', nPostes, PRECIOS.tapa, { impresa: 'tapa' });
+  agregar('Perno de coche M6 × 40 con tuerca ciega', nUniones * u.pernos, PRECIOS.perno);
+  agregar('Tuerca de inserción M8 para madera', nUniones * u.insertos, PRECIOS.inserto);
 
+  const HORAS = { anillo: 1.5, tapa: 1.5 };
+  const horasImpresion = piezas.reduce((s, p) => s + (p.impresa ? HORAS[p.impresa] * p.cantidad : 0), 0);
   const total = piezas.reduce((s, p) => s + p.cantidad * p.precio, 0);
-  const errorMax = Math.max(...lados.map((l) => l.error));
+  const adaptaciones = piezas.filter((p) => p.adaptacion).reduce((s, p) => s + p.cantidad, 0);
 
   return {
-    forma,
-    cerrada,
-    puntos,
-    lados,
-    ladoPuerta,
-    puertaNoCabe,
-    nodos,
-    postes,
-    anclajes,
+    postes: pts,
+    cerrado,
+    hueco,
+    angulos,
+    avisos,
     piezas,
-    area,
-    horasImpresion: horas,
-    gramosFilamento: gramos,
     total,
-    errorMax,
+    horasImpresion,
+    adaptaciones,
+    nPostes,
+    largo: tramos.reduce((s, t) => s + t.modulo, 0),
+    // un corral abierto se cierra contra la pared, que une sus dos extremos
+    area: n >= 2 ? areaPoligono(cerrado ? pts.slice(0, n) : pts) / 1e6 : 0,
   };
 }
+
+// Diseños de ejemplo. Habitación con la pared principal arriba (y = 0) y la izquierda en x = 0.
+const P = (modulo, rumbo, tipo = 'barrotes', borde = 'recto') => ({ modulo, rumbo, tipo, borde });
+
+export const EJEMPLOS = {
+  curva: {
+    nombre: 'Curva contra la pared',
+    inicio: [700, 20],
+    anclado: true,
+    tramos: [
+      P(600, 90, 'barrotes', 'olas'),
+      P(300, 60),
+      P(300, 30),
+      P(800, 0, 'puerta'),
+      P(600, 0, 'espejo'),
+      P(300, -30),
+      P(300, -60),
+      P(600, -90, 'barrotes', 'olas'),
+    ],
+  },
+  rincon: {
+    nombre: 'Rincón redondeado',
+    inicio: [20, 1330],
+    anclado: true,
+    tramos: [
+      P(800, 0, 'puerta'),
+      P(300, -30, 'barrotes', 'nubes'),
+      P(300, -60, 'barrotes', 'nubes'),
+      P(600, -90, 'luz'),
+      P(300, -90),
+    ],
+  },
+  isla: {
+    nombre: 'Isla rectangular',
+    inicio: [1000, 900],
+    anclado: false,
+    tramos: [P(800, 0, 'puerta'), P(600, 90), P(800, 180, 'espejo'), P(600, 270)],
+  },
+  hexagono: {
+    nombre: 'Hexágono',
+    inicio: [1200, 700],
+    anclado: false,
+    tramos: [0, 60, 120, 180, 240, 300].map((r, i) => P(800, r, i === 0 ? 'puerta' : 'barrotes', i === 0 ? 'recto' : 'montanas')),
+  },
+};

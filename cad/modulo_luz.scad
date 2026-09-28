@@ -1,53 +1,44 @@
-// Módulo de luz: caja que se atornilla al enganche universal.
-// Alimentación USB 5 V por cable que sale hacia FUERA del corral.
-// Sin pilas: nada de pilas de botón al alcance del niño.
+// Módulo de luz: caja que se atornilla por FUERA de un panel tipo "ventana".
+// Desde dentro del corral solo se ve el acrílico opal de la ventana.
+// Alimentación USB 5 V con el cable por fuera. Sin pilas.
 //
-//   openscad -D 'parte="caja"'    -o luz_caja.stl    modulo_luz.scad
-//   openscad -D 'parte="difusor"' -o luz_difusor.stl modulo_luz.scad   (PETG natural, 1 mm)
+//   openscad -o luz_caja.stl modulo_luz.scad
+//
+// El difusor es una lámina de acrílico opal de 3 mm (ventana + 20 mm por lado),
+// cortada en láser o CNC, que queda apretada entre la caja y el panel.
 
 include <nido.scad>
 
-parte = "caja";
+ventana = [100, 130];        // coincide con panel.scad
+ala     = 20;                // cuánto sobresale la brida alrededor de la ventana
+fondo   = 30;
+pared   = 2.4;
+radio   = 8;
+acrilico = 3;
 
-caja     = [100, 30, 130];   // ancho (y), fondo (x), alto (z)
-pared    = 2.4;
-radio    = 6;
-patron   = [40, 20];         // debe coincidir con enganche.scad
-difusor_grosor = 1.0;
+externo = [ventana[0] + 2 * ala, ventana[1] + 2 * ala];
 
-module redondeado(tam, r) {
-    hull() for (y = [r, tam[0] - r], z = [r, tam[2] - r])
-        translate([0, y, z]) rotate([0, 90, 0]) cylinder(r = r, h = tam[1]);
+module rect_redondeado(tam, r, h) {
+    linear_extrude(h) offset(r = r) offset(delta = -r) square(tam, center = true);
 }
 
 module caja() {
     difference() {
-        redondeado(caja, radio);
-        // cavidad abierta hacia el interior del corral (x positivo)
-        translate([pared, pared, pared])
-            redondeado([caja[0] - 2 * pared, caja[1], caja[2] - 2 * pared], radio - pared);
-        // tornillos al enganche (arriba, alineados con sus insertos)
-        for (dy = [-1, 1], dz = [0, 1])
-            translate([-1, caja[0] / 2 + dy * patron[0] / 2, caja[2] - 12 - dz * patron[1]])
-                rotate([0, 90, 0]) cylinder(d = 3.4, h = pared + 2);
-        // salida del cable USB por la parte superior trasera
-        translate([pared + 3, caja[0] / 2 - 3, caja[2] - pared - 1]) cube([5, 6, pared + 2]);
-    }
-    // postes para atornillar el difusor (tornillos M2.5 autorroscantes)
-    for (y = [12, caja[0] - 12], z = [12, caja[2] - 12])
-        translate([pared, y, z]) rotate([0, 90, 0]) difference() {
-            cylinder(d = 7, h = caja[1] - pared - difusor_grosor);
-            cylinder(d = 2.2, h = caja[1]);
+        union() {
+            rect_redondeado(externo, radio, pared);                         // brida
+            rect_redondeado(ventana + [2 * pared, 2 * pared], radio, fondo); // cuerpo
         }
-}
-
-module difusor() {
-    difference() {
-        redondeado([caja[0], difusor_grosor, caja[2]], radio);
-        for (y = [12, caja[0] - 12], z = [12, caja[2] - 12])
-            translate([-1, y, z]) rotate([0, 90, 0]) cylinder(d = 2.8, h = 3);
+        // cavidad abierta hacia el panel, con asiento para el acrílico
+        translate([0, 0, -1]) rect_redondeado(ventana, radio - pared, fondo - pared + 1);
+        translate([0, 0, -1]) rect_redondeado(ventana + [2 * ala - 8, 2 * ala - 8], radio, acrilico + 1);
+        // tornillos para madera 3,5 × 25 mm a través de la brida y el acrílico
+        for (x = [-1, 1], y = [-1, 1])
+            translate([x * (externo[0] / 2 - ala / 2), y * (externo[1] / 2 - ala / 2), -1])
+                cylinder(d = 3.8, h = pared + 2);
+        // salida del cable
+        translate([0, ventana[1] / 2 - 1, fondo - pared - 6])
+            rotate([-90, 0, 0]) cylinder(d = 6, h = pared + 2);
     }
 }
 
-if (parte == "caja") caja();
-else difusor();
+caja();

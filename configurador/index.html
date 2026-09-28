@@ -18,10 +18,10 @@
   --acento: #2c6b66;
   --acento-tinta: #ffffff;
   --madera: #d2ad7c;
-  --madera-borde: #9c7442;
   --poste: #6f5332;
   --pared: #8b9794;
   --puerta: #e0795a;
+  --adaptacion: #5b8fd6;
   --suelo: #f7faf9;
   --aviso: #a0521c;
   --aviso-fondo: #fbeee2;
@@ -38,10 +38,10 @@
     --acento: #72b9b1;
     --acento-tinta: #0f1816;
     --madera: #b89163;
-    --madera-borde: #d9b688;
     --poste: #e1c49a;
     --pared: #6d7a77;
     --puerta: #f0906f;
+    --adaptacion: #8db4ec;
     --suelo: #161f1d;
     --aviso: #f0a36b;
     --aviso-fondo: #33241a;
@@ -58,10 +58,10 @@
   --acento: #72b9b1;
   --acento-tinta: #0f1816;
   --madera: #b89163;
-  --madera-borde: #d9b688;
   --poste: #e1c49a;
   --pared: #6d7a77;
   --puerta: #f0906f;
+  --adaptacion: #8db4ec;
   --suelo: #161f1d;
   --aviso: #f0a36b;
   --aviso-fondo: #33241a;
@@ -76,7 +76,7 @@ body {
   font: 15px/1.5 "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
   padding: 24px 16px 48px;
 }
-.pagina { max-width: 1180px; margin: 0 auto; display: grid; gap: 24px; }
+.pagina { max-width: 1240px; margin: 0 auto; display: grid; gap: 24px; }
 header { display: grid; gap: 6px; }
 h1, h2 {
   font-family: "Bricolage Grotesque", "Figtree", system-ui, sans-serif;
@@ -87,12 +87,15 @@ h1, h2 {
 h1 { font-size: clamp(1.7rem, 4vw, 2.4rem); font-weight: 700; }
 h1 span { color: var(--acento); }
 h2 { font-size: 1.1rem; font-weight: 500; }
-.bajada { color: var(--suave); max-width: 62ch; margin: 0; }
+.bajada { color: var(--suave); max-width: 64ch; margin: 0; }
 
-.cuerpo { display: grid; grid-template-columns: 320px 1fr; gap: 24px; align-items: start; }
-@media (max-width: 860px) { .cuerpo { grid-template-columns: 1fr; } }
+.cuerpo { display: grid; grid-template-columns: 360px 1fr; gap: 24px; align-items: start; }
+@media (max-width: 900px) {
+  .cuerpo { grid-template-columns: 1fr; }
+  .resultado { order: -1; }
+}
 
-form {
+.panel-lateral {
   background: var(--superficie);
   border: 1px solid var(--linea);
   border-radius: 14px;
@@ -100,7 +103,7 @@ form {
   display: grid;
   gap: 18px;
 }
-fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 10px; }
+fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 10px; min-width: 0; }
 legend {
   font-size: 0.75rem;
   letter-spacing: 0.08em;
@@ -113,20 +116,63 @@ legend {
 label { display: grid; gap: 4px; font-size: 0.88rem; font-weight: 500; }
 input[type="number"], select {
   font: inherit;
+  font-size: 0.9rem;
   color: var(--tinta);
   background: var(--suelo);
   border: 1px solid var(--linea);
   border-radius: 8px;
-  padding: 8px 10px;
+  padding: 6px 8px;
   width: 100%;
+  min-width: 0;
   font-variant-numeric: tabular-nums;
 }
-input:focus-visible, select:focus-visible { outline: 2px solid var(--acento); outline-offset: 1px; }
+input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px solid var(--acento); outline-offset: 1px; }
 .check { display: flex; gap: 10px; align-items: flex-start; font-weight: 400; }
 .check input { margin-top: 3px; accent-color: var(--acento); }
 .check small { display: block; color: var(--suave); }
-.modulos { display: grid; gap: 8px; }
-.modulo-recomendado small { color: var(--ok); }
+
+button {
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid var(--linea);
+  background: var(--suelo);
+  color: var(--tinta);
+  padding: 6px 12px;
+  cursor: pointer;
+}
+button:hover { border-color: var(--acento); }
+button.principal { background: var(--acento); color: var(--acento-tinta); border-color: var(--acento); }
+.ejemplos { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.tramos { display: grid; gap: 8px; }
+.tramo {
+  display: grid;
+  grid-template-columns: 20px 82px minmax(0, 1fr) 62px 30px;
+  grid-template-areas: "n mod tipo giro x" ". borde borde borde .";
+  gap: 6px;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--linea);
+}
+.tramo .n { grid-area: n; color: var(--suave); font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+.tramo .mod { grid-area: mod; }
+.tramo .tipo { grid-area: tipo; }
+.tramo .giro { grid-area: giro; }
+.tramo .borde { grid-area: borde; }
+.tramo .quitar { grid-area: x; padding: 4px; line-height: 1; }
+.cabecera-tramos { display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; color: var(--suave); }
+
+.recomendadas { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  font-size: 0.8rem;
+  border-radius: 999px;
+  padding: 3px 10px;
+  background: var(--suelo);
+  border: 1px solid var(--linea);
+  color: var(--tinta);
+}
 
 .resultado { display: grid; gap: 20px; min-width: 0; }
 .plano {
@@ -135,24 +181,30 @@ input:focus-visible, select:focus-visible { outline: 2px solid var(--acento); ou
   border-radius: 14px;
   padding: 12px;
 }
-.plano svg { width: 100%; height: auto; display: block; max-height: 520px; }
+.plano svg { width: 100%; height: auto; display: block; max-height: 560px; touch-action: none; user-select: none; }
+.ayuda { font-size: 0.82rem; color: var(--suave); margin: 4px 6px 0; }
 .leyenda { display: flex; flex-wrap: wrap; gap: 14px; padding: 8px 6px 2px; font-size: 0.82rem; color: var(--suave); }
 .leyenda i { display: inline-block; width: 14px; height: 6px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
 
 .hab { fill: var(--suelo); stroke: var(--pared); stroke-width: 60; }
-.area { fill: var(--acento); fill-opacity: 0.08; stroke: none; }
+.area { fill: var(--acento); fill-opacity: 0.08; }
 .panel { stroke: var(--madera); stroke-width: 44; stroke-linecap: butt; }
-.puerta { stroke: var(--puerta); stroke-width: 44; }
-.barrido { fill: none; stroke: var(--puerta); stroke-width: 10; stroke-dasharray: 40 30; }
-.poste { fill: var(--poste); }
+.panel.puerta { stroke: var(--puerta); }
+.panel.adaptacion { stroke: var(--adaptacion); }
+.poste { fill: var(--poste); cursor: grab; }
+.poste:hover, .poste.activo { fill: var(--acento); }
+.agarre { fill: transparent; cursor: grab; }
 .anclaje { fill: var(--pared); }
-.cota { fill: var(--suave); font: 600 120px "Figtree", system-ui, sans-serif; text-anchor: middle; }
+.angulo { fill: var(--suave); font: 600 90px "Figtree", system-ui, sans-serif; text-anchor: middle; pointer-events: none; }
+.angulo.mal { fill: var(--aviso); }
+.etiqueta { fill: var(--tinta); font: 700 100px "Figtree", system-ui, sans-serif; text-anchor: middle; pointer-events: none; }
+.cierre { stroke: var(--aviso); stroke-width: 12; stroke-dasharray: 40 30; fill: none; }
 
 .cifras { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
 .cifra { display: grid; gap: 2px; }
 .cifra b {
   font-family: "Bricolage Grotesque", system-ui, sans-serif;
-  font-size: 1.6rem;
+  font-size: 1.5rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
@@ -166,6 +218,7 @@ input:focus-visible, select:focus-visible { outline: 2px solid var(--acento); ou
   font-size: 0.9rem;
   margin: 0;
 }
+.aviso ul { margin: 0; padding-left: 18px; }
 
 .tabla { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 0.92rem; }
@@ -173,7 +226,15 @@ th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--lin
 th { font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--suave); font-weight: 600; }
 td.num, th.num { text-align: right; white-space: nowrap; }
 tfoot td { font-weight: 600; border-bottom: 0; }
-.lados td:first-child { color: var(--suave); }
+tr.adaptacion td:first-child::after {
+  content: "adaptación";
+  margin-left: 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--adaptacion);
+}
 .nota { color: var(--suave); font-size: 0.82rem; margin: 0; }
 </style>
 </head>
@@ -181,64 +242,72 @@ tfoot td { font-weight: 600; border-bottom: 0; }
 <div class="pagina">
   <header>
     <h1>Nido <span>·</span> diseña tu corral</h1>
-    <p class="bajada">Mide el espacio, elige la forma y te decimos qué piezas necesitas. Los paneles se cortan en madera y las uniones, tapas y módulos se imprimen en 3D.</p>
+    <p class="bajada">Cada panel gira alrededor de su poste, así que el corral toma la forma que pida tu espacio: rectas, curvas o rincones. Arrastra los postes del plano o ajusta el giro de cada panel.</p>
   </header>
 
   <div class="cuerpo">
-    <form id="form" autocomplete="off">
+    <form class="panel-lateral" id="form" autocomplete="off">
       <fieldset>
-        <legend>Espacio</legend>
+        <legend>Empieza con un ejemplo</legend>
+        <div class="ejemplos" id="ejemplos"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Habitación</legend>
         <div class="fila">
-          <label for="habAncho">Habitación ancho (cm)
+          <label for="habAncho">Ancho (cm)
             <input id="habAncho" type="number" min="150" max="1500" step="10" value="400">
           </label>
-          <label for="habFondo">Habitación fondo (cm)
-            <input id="habFondo" type="number" min="150" max="1500" step="10" value="350">
+          <label for="habFondo">Fondo (cm)
+            <input id="habFondo" type="number" min="150" max="1500" step="10" value="300">
           </label>
         </div>
-      </fieldset>
-
-      <fieldset>
-        <legend>Corral</legend>
-        <label for="forma">Forma
-          <select id="forma"></select>
-        </label>
-        <div class="fila">
-          <label for="ancho">Ancho (cm)
-            <input id="ancho" type="number" min="80" max="600" step="2" value="168">
-          </label>
-          <label for="fondo">Fondo (cm)
-            <input id="fondo" type="number" min="80" max="600" step="2" value="130">
-          </label>
-        </div>
-        <label class="check" for="puerta">
-          <input id="puerta" type="checkbox" checked>
-          <span>Incluir puerta<small>Sustituye un panel de 80 cm.</small></span>
+        <label class="check" for="anclado">
+          <input id="anclado" type="checkbox" checked>
+          <span>Extremos anclados a la pared<small>Para corrales abiertos. Uno cerrado no los necesita.</small></span>
         </label>
       </fieldset>
 
       <fieldset>
-        <legend>Módulos de juego</legend>
+        <div class="cabecera-tramos">
+          <legend>Paneles</legend>
+          <span>tamaño · tipo · giro°</span>
+        </div>
+        <div class="tramos" id="tramos"></div>
+        <button type="button" class="principal" id="agregar">Añadir panel</button>
+      </fieldset>
+
+      <fieldset>
+        <legend>Unión panel–poste</legend>
+        <label for="union">Tipo de unión
+          <select id="union"></select>
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Adaptaciones para su edad</legend>
         <label for="edad">Edad del bebé (meses)
           <input id="edad" type="number" min="0" max="96" step="1" value="8">
         </label>
-        <div class="modulos" id="modulos"></div>
+        <div class="recomendadas" id="recomendadas"></div>
       </fieldset>
     </form>
 
     <section class="resultado" aria-live="polite">
       <div class="plano">
-        <svg id="svg" role="img" aria-label="Vista en planta del corral dentro de la habitación"></svg>
+        <svg id="svg" role="img" aria-label="Plano del corral dentro de la habitación"></svg>
+        <p class="ayuda">Arrastra un poste para girar el panel que llega a él. El primero mueve todo el corral.</p>
         <div class="leyenda">
           <span><i style="background: var(--madera)"></i>Panel</span>
           <span><i style="background: var(--puerta)"></i>Puerta</span>
-          <span><i style="background: var(--poste); width: 8px; height: 8px; border-radius: 50%"></i>Poste con nodos</span>
+          <span><i style="background: var(--adaptacion)"></i>Adaptación</span>
+          <span><i style="background: var(--poste); width: 8px; height: 8px; border-radius: 50%"></i>Poste</span>
           <span><i style="background: var(--pared)"></i>Pared</span>
         </div>
       </div>
 
       <div class="cifras" id="cifras"></div>
-      <p class="aviso" id="aviso" hidden></p>
+      <div class="aviso" id="aviso" hidden></div>
 
       <div class="tabla">
         <h2>Lista de piezas</h2>
@@ -248,15 +317,7 @@ tfoot td { font-weight: 600; border-bottom: 0; }
           <tfoot><tr><td colspan="3">Total estimado</td><td class="num" id="total"></td></tr></tfoot>
         </table>
       </div>
-
-      <div class="tabla lados">
-        <h2>Lados</h2>
-        <table>
-          <thead><tr><th>Lado</th><th>Paneles</th><th class="num">Pedido</th><th class="num">Real</th></tr></thead>
-          <tbody id="lados"></tbody>
-        </table>
-      </div>
-      <p class="nota">Precios en USD estimados para el prototipo (madera cortada en CNC, PETG a 25 USD/kg). Separación entre barrotes 50 mm, altura 65 cm: dentro de EN 12227 y ASTM F406.</p>
+      <p class="nota">Precios de referencia en pesos colombianos para el prototipo; se ajustan con cotizaciones reales. Barrotes separados 50 mm, altura 65 cm y huecos entre panel y poste menores de 5 mm.</p>
     </section>
   </div>
 </div>

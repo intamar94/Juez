@@ -4,11 +4,11 @@ En lugar de encuestas, se parte de reseñas y foros públicos. Primera pasada (s
 
 | Queja recurrente | Cómo responde Nido |
 |---|---|
-| El corral se desliza o se voltea; algunas marcas añaden ventosas | Anclajes a pared y a muebles |
-| Huecos y puntos de pellizco en los de madera; cierres flojos | Paneles encajan contra el poste (sin hueco); separación de barrotes fija de 50 mm |
-| Armado complicado; saltarse un paso deja puntos débiles | Una sola forma de unión (nodo + 2 pernos por panel) |
+| El corral se desliza o se voltea; algunas marcas añaden ventosas | Anclaje a pared con abrazaderas de tubo, o corral cerrado |
+| Huecos y puntos de pellizco en los de madera; cierres flojos | El panel gira a 2 mm del poste, sin hueco que se abra o se cierre; barrotes a 50 mm |
+| Armado complicado; saltarse un paso deja puntos débiles | Se arma metiendo postes; cambiar un panel no requiere herramientas |
 | La malla se afloja y el niño la usa para trepar | Paneles rígidos de madera |
-| Costuras que se rompen con el uso | Sin textiles estructurales |
+| Costuras que se rompen con el uso | Sin costuras; la unión de correa solo sigue si pasa los ensayos de tirón y mordisco |
 | Que "no abrume la habitación" es un argumento de compra | Formas a medida y acabados que combinan con la casa |
 
 ## Pendiente

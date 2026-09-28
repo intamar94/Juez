@@ -5,18 +5,19 @@ set -euo pipefail
 cd "$(dirname "$0")"
 mkdir -p stl
 
-for a in 90 120 135 180 270; do
-  openscad -q -D "angulos=[0,$a]" -o "stl/nodo_$a.stl" nodo.scad
-done
-openscad -q -D 'angulos=[0,90,180]' -o stl/nodo_T.stl nodo.scad
-openscad -q -o stl/anclaje.stl anclaje.scad
+panel() {  # panel <modulo> <tipo> <borde>
+  openscad -q -D "modulo=$1" -D "tipo=\"$2\"" -D "borde=\"$3\"" -o "stl/panel_$1_$2_$3.dxf" panel.scad
+}
+for m in 300 600 800; do panel "$m" barrotes recto; done
+for b in olas montanas nubes; do panel 600 barrotes "$b"; done
+panel 300 barrotes nubes
+panel 600 macizo recto
+panel 800 ventana recto
+
+openscad -q -D 'tipo="anillo"'  -o stl/anillo.stl   anillo.scad
+openscad -q -D 'tipo="relleno"' -o stl/relleno.stl  anillo.scad
 for e in cupula hoja estrella; do
   openscad -q -D "estilo=\"$e\"" -o "stl/tapa_$e.stl" tapa.scad
 done
-openscad -q -o stl/enganche.stl enganche.scad
-openscad -q -D 'parte="caja"' -o stl/luz_caja.stl modulo_luz.scad
-openscad -q -D 'parte="difusor"' -o stl/luz_difusor.stl modulo_luz.scad
-for w in 400 600 800; do
-  openscad -q -D "ancho=$w" -o "stl/panel_$w.dxf" panel.scad
-done
+openscad -q -o stl/luz_caja.stl modulo_luz.scad
 echo "Listo: $(ls stl | wc -l) archivos en cad/stl/"

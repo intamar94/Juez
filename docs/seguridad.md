@@ -30,28 +30,37 @@ preguntarlo al cotizar.
 
 | Requisito | Valor en Nido | Dónde |
 |---|---|---|
-| Separación entre barrotes: 45–65 mm (EN), ≤ 60 mm (ASTM) | 50 mm | `cad/nido.scad` (`panel_hueco`, con `assert`) |
-| Altura del corral | 650 mm | `panel_alto` |
-| Sin huecos entre paneles | El canto del panel toca el poste dentro del nodo | `cad/nodo.scad` |
-| Sin huecos de 7–12 mm accesibles (dedos) | Agujeros de perno ocupados por pernos M6 con tuerca ciega | `cad/panel.scad` |
-| Sin cantos vivos | Nodos redondeados, tapas en cúpula | `cad/nodo.scad`, `cad/tapa.scad` |
-| La abrazadera no tapa los huecos | `nodo_alto` menor que los rieles | `assert` en `cad/nido.scad` |
-| Estabilidad | Anclaje a pared en formas abiertas | `cad/anclaje.scad` |
+| Separación entre barrotes: 45–65 mm (EN), ≤ 60 mm (ASTM) | 50 mm | `panel_hueco` en `cad/nido.scad`, con `assert` |
+| Altura del corral | 615–650 mm según la forma del borde | `panel_alto`, `panel_bajo` |
+| Sin huecos para dedos entre panel y poste (el panel gira) | 2 mm, igual a cualquier ángulo porque el poste es redondo | `borde_eje`, con `assert` |
+| Sin huecos para dedos alrededor de las uniones | 3 mm entre la unión y la muesca; 3 mm entre uniones | `muesca_eje`, `union_sep`, con `assert` |
+| Las uniones de dos paneles no chocan | Alturas distintas en los extremos A y B; ángulo mínimo de 60° | `bandas_A`, `bandas_B`; el configurador avisa |
+| Sin cantos vivos | Cantos del triplex redondeados, anillos redondeados, tapas en cúpula | `docs/fabricacion.md`, `cad/anillo.scad` |
+| Estabilidad | Corral cerrado, o abierto con los extremos anclados a la pared | El configurador avisa |
 
-## Módulos y electrónica
+### Riesgos que hay que medir con el prototipo
+
+- **Un corral de bisagras libres puede deformarse** si el niño empuja fuerte. Hay que medir
+  cuánto se mueve. Si es demasiado, se añade un tornillo de traba en la unión que fije el
+  ángulo una vez elegido.
+- **Correa:** la cinta puede estirarse o cortarse. Hay que probar que aguanta tirones y
+  mordiscos, y que el perno no la rasga.
+- **Abrazadera de ferretería:** comprobar que el espárrago no se afloja con el uso.
+
+## Adaptaciones (paneles especiales) y electrónica
 
 - Nada de piezas que quepan en el cilindro de piezas pequeñas (Ø31,7 mm).
-- **Sin pilas de botón.** Los módulos de luz van por USB 5 V con el cable hacia fuera del corral.
-- Tornillos solo por el lado de fuera o dentro de cajas cerradas con tornillo.
-- Módulos fijados con herramienta: el niño no los puede soltar.
-- **Ningún módulo puede servir de escalón.** Todo lo que se monte por dentro (barra,
-  estante, caja de luz) se revisa como posible apoyo para trepar y salirse del corral.
-  Hay que probarlo con cada módulo.
+- Espejo, acrílicos y luz se montan **por fuera** del panel, tras una ventana. Desde dentro
+  no hay tornillos ni bordes.
+- Espejo de **acrílico**, nunca de vidrio.
+- **Sin pilas de botón.** La luz va por USB 5 V con el cable por fuera del corral.
+- **Ninguna adaptación puede servir de escalón** para trepar y salirse. Hay que probarlo con
+  cada una (estantes y barras, sobre todo).
 
 ## Tornillería
 
 - Pernos de coche con la cabeza redonda **hacia dentro** del corral y la tuerca ciega por fuera.
-- Los tornillos que fijan nodos y módulos quedan del lado de fuera.
+- Tornillos de adaptaciones y anclajes, siempre del lado de fuera.
 
 ## Materiales
 
@@ -61,7 +70,7 @@ preguntarlo al cotizar.
 
 ## Por hacer antes de vender
 
-- [ ] Ensayos internos con el prototipo ([`docs/fabricacion.md`](fabricacion.md), sección 4).
+- [ ] Ensayos internos con el prototipo ([`docs/fabricacion.md`](fabricacion.md), sección 5).
 - [ ] Diseñar la puerta con cierre de doble acción.
 - [ ] Cotizar la certificación con 2 o 3 laboratorios y confirmar qué norma aplica.
 - [ ] Confirmar los requisitos legales para vender en Colombia (SIC).
