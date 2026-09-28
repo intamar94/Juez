@@ -1,4 +1,4 @@
-// GET /api/config — qué puede hacer la página: cobrar con Stripe o en modo demo, y qué ideas
+// GET /api/config — qué puede hacer la página en producción: cobrar con Stripe o en modo demo, y qué ideas
 // se pueden comprar dentro.
 import { dependencias, ideasComprables } from '../servidor/pedidos.js';
 import { PAISES_ENVIO } from '../servidor/config.js';
