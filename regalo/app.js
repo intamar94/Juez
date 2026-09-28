@@ -1,4 +1,5 @@
 import { CATEGORIAS, IDEAS } from './catalogo.js';
+import { abrirCheckout, iniciarCheckout, sePuedeComprar } from './checkout.js';
 import { bandera, MONEDAS, nombreMoneda, PAISES, paisDelIdioma } from './paises.js';
 import {
   categoria, dondeComprar, enlaceCompra, hayAfiliados, ideasDe, NIVELES, PLAZOS, precioLocal, sorpresa, textoCompra, textoNivel,
@@ -46,6 +47,8 @@ function iniciar() {
   addEventListener('hashchange', () => mostrar(true));
   mostrar(false);
   cargarTasas();
+  // Con servidor, los productos se compran aquí mismo; sin él, siguen los enlaces a tienda.
+  iniciarCheckout(() => ({ ...regionActual(), tasas })).then((hay) => { if (hay) repintar(); });
 }
 
 // — País y moneda —
@@ -214,11 +217,23 @@ function tarjeta(idea) {
     el('h3', { textContent: idea.nombre }),
     el('p', { textContent: idea.porque }),
     el('span', { className: 'precio', textContent: precio }),
-    el('a', {
-      className: 'comprar', href: enlaceCompra(idea, pais), target: '_blank', rel: patrocinado ? 'sponsored noopener' : 'noopener',
-      textContent: textoCompra(idea, pais),
-    }),
+    botonCompra(idea, pais, patrocinado),
   );
+}
+
+function botonCompra(idea, pais, patrocinado) {
+  if (sePuedeComprar(idea)) {
+    const boton = el('button', { type: 'button', className: 'comprar', textContent: 'Comprar aquí' });
+    boton.addEventListener('click', () => {
+      $('dialogo-sorpresa').close();
+      abrirCheckout(idea);
+    });
+    return boton;
+  }
+  return el('a', {
+    className: 'comprar', href: enlaceCompra(idea, pais), target: '_blank', rel: patrocinado ? 'sponsored noopener' : 'noopener',
+    textContent: textoCompra(idea, pais),
+  });
 }
 
 function abrirSorpresa() {

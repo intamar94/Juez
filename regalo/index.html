@@ -188,7 +188,35 @@ dialog h2 { font-size: 24px; }
 .cerrar { border: 0; background: var(--chip); border-radius: 999px; width: 36px; height: 36px; font-size: 18px; }
 footer { padding: 32px 0 48px; color: var(--suave); font-size: 14px; border-top: 1px solid var(--linea); margin-top: 24px; }
 
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .categoria { transition: none; } }
+.compra { width: min(520px, calc(100% - 32px)); max-height: calc(100dvh - 32px); overflow: auto; }
+.compra .dentro { gap: 14px; }
+.compra h2 { font-size: 22px; }
+.compra .sub { margin: -6px 0 0; color: var(--suave); font-size: 14px; }
+.campos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.campos .ancho { grid-column: 1 / -1; }
+@media (max-width: 480px) { .campos { grid-template-columns: 1fr; } }
+.campos label { display: grid; gap: 4px; font-size: 13px; font-weight: 700; }
+.campos input, .campos select {
+  font: inherit; font-weight: 500; color: var(--tinta); background: var(--superficie);
+  border: 1px solid var(--linea); border-radius: 10px; padding: 9px 11px; width: 100%;
+}
+.campos .error, #co-error { color: var(--rojo); font-size: 13px; font-weight: 600; min-height: 0; }
+.nota { background: var(--chip); border-radius: 12px; padding: 10px 12px; font-size: 14px; margin: 0; }
+.desglose { display: grid; gap: 6px; font-size: 15px; }
+.desglose div { display: flex; justify-content: space-between; color: var(--suave); }
+.total { display: flex; justify-content: space-between; font-weight: 800; font-size: 20px; border-top: 1px solid var(--linea); padding-top: 10px; }
+.cargando { display: grid; place-items: center; gap: 12px; padding: 24px 0; text-align: center; color: var(--suave); }
+.cargando::before {
+  content: ''; width: 36px; height: 36px; border-radius: 50%;
+  border: 4px solid var(--linea); border-top-color: var(--acento); animation: girar 0.9s linear infinite;
+}
+@keyframes girar { to { transform: rotate(360deg); } }
+.boton[disabled] { opacity: .6; cursor: wait; }
+[data-paso][hidden] { display: none !important; }
+.enlace { background: none; border: 0; color: var(--suave); text-decoration: underline; padding: 0; font-size: 14px; justify-self: start; }
+.idea button.comprar { border: 0; width: 100%; font-family: inherit; cursor: pointer; }
+
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .categoria { transition: none; } .cargando::before { animation-duration: 3s; } }
 </style>
 </head>
 <body>
@@ -245,9 +273,57 @@ footer { padding: 32px 0 48px; color: var(--suave); font-size: 14px; border-top:
   </form>
 </dialog>
 
+<dialog id="dialogo-compra" class="compra" aria-labelledby="co-titulo">
+  <div class="dentro">
+    <div>
+      <h2 id="co-titulo">🎁 <span id="co-producto"></span></h2>
+      <button type="button" class="cerrar" id="co-cerrar" aria-label="Cerrar">✕</button>
+    </div>
+
+    <form id="co-form" data-paso="datos" novalidate>
+      <div class="campos">
+        <p class="nota ancho">📦 ¿A quién se lo enviamos? Por ahora enviamos a direcciones de <b>Estados Unidos</b>; puedes pagar desde cualquier país.</p>
+        <p class="nota ancho" id="co-demo" hidden>🧪 Modo demo: no se cobra nada ni se hace un pedido real.</p>
+        <label>Nombre<input name="firstName" autocomplete="given-name" required><span class="error" data-error="firstName"></span></label>
+        <label>Apellido<input name="lastName" autocomplete="family-name" required><span class="error" data-error="lastName"></span></label>
+        <label class="ancho">Dirección<input name="address1" autocomplete="address-line1" required><span class="error" data-error="address1"></span></label>
+        <label class="ancho">Apartamento, suite… (opcional)<input name="address2" autocomplete="address-line2"></label>
+        <label>Ciudad<input name="city" autocomplete="address-level2" required><span class="error" data-error="city"></span></label>
+        <label>Estado<select name="province" id="co-province" autocomplete="address-level1" required><option value="">Elige…</option></select><span class="error" data-error="province"></span></label>
+        <label>Código postal<input name="postalCode" autocomplete="postal-code" inputmode="numeric" required><span class="error" data-error="postalCode"></span></label>
+        <label>Teléfono<input name="phone" type="tel" autocomplete="tel" required><span class="error" data-error="phone"></span></label>
+        <label class="ancho">Correo (para el recibo y el seguimiento)<input name="email" type="email" autocomplete="email" required><span class="error" data-error="email"></span></label>
+      </div>
+      <button type="submit" class="boton" id="co-continuar" style="justify-content:center;width:100%;margin-top:14px">Ver precio final</button>
+    </form>
+
+    <div data-paso="buscando" hidden>
+      <p class="cargando">Buscando precio, envío e impuestos en la tienda…<br>Tarda unos segundos.</p>
+    </div>
+
+    <div data-paso="resumen" hidden style="display:grid;gap:14px">
+      <div class="desglose" id="co-desglose"></div>
+      <div class="total"><span>Total</span><span id="co-total"></span></div>
+      <p class="sub" id="co-total-local"></p>
+      <div id="co-pago"></div>
+      <button type="button" class="boton" id="co-pagar" style="justify-content:center">Pagar</button>
+      <button type="button" class="enlace" id="co-volver">← Cambiar la dirección</button>
+    </div>
+
+    <div data-paso="listo" hidden style="display:grid;gap:10px">
+      <p style="font-size:18px;font-weight:800;margin:0">✅ ¡Pagado! Nosotros hacemos el pedido.</p>
+      <p class="sub" style="margin:0">Estado: <b id="co-estado">Consultando…</b></p>
+      <ul id="co-envios" class="sub" style="margin:0"></ul>
+      <p class="nota">Pedido <code id="co-numero"></code>. Te llegará el recibo por correo; guarda esta página para ver el seguimiento.</p>
+    </div>
+
+    <p id="co-error" role="alert"></p>
+  </div>
+</dialog>
+
 <footer>
   <div class="envoltura">
-    Los precios son aproximados y se calculan con el tipo de cambio del día. El botón te lleva a una tienda de tu país con la búsqueda hecha.
+    Los precios de las tarjetas son aproximados y usan el tipo de cambio del día. Antes de pagar ves el precio final exacto, con envío e impuestos.
     <p id="aviso-afiliados" hidden>Algunos enlaces son de afiliado: si compras a través de ellos, Acierto recibe una comisión sin costo extra para ti. Como afiliado de Amazon, obtengo ingresos por las compras adscritas que cumplen los requisitos aplicables.</p>
   </div>
 </footer>

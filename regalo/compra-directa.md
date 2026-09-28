@@ -1,64 +1,65 @@
 # Comprar sin salir de Acierto
 
-Objetivo: que el usuario pague en nuestra página y, por detrás, el pedido se haga solo en la
-tienda donde está el producto.
+El cliente pone la dirección de envío, ve el precio final y paga en la página. Por detrás, el
+servidor hace el pedido en la tienda donde está el producto y le envía el regalo directamente.
 
 ## Cómo funciona
 
 ```
-Usuario ──paga──▶ Acierto (checkout propio) ──▶ Servidor de Acierto ──pedido──▶ Tienda de origen
-                        │                            │                              │
-                   pasarela de pago            guarda el pedido,               envía al usuario
-                (Stripe, Mercado Pago)       lanza la compra y sigue           y devuelve número
-                                               el envío                         de seguimiento
+ Página                       Servidor (/api)                      Servicios
+ ──────                       ───────────────                      ─────────
+ Dirección de envío  ──▶  /api/comprar     ──crea pedido──▶  Rye: busca precio, envío e
+                                                              impuestos en la tienda
+ «Buscando precio…»  ──▶  /api/cotizacion  ◀──oferta──────  (Amazon, Shopify y otras)
+ Precio final + margen
+ Tarjeta (Stripe)    ──▶  /api/pagar       ──cobro─────────▶ Stripe: el cliente te paga a ti
+ Pago hecho          ──▶  /api/confirmar   ──comprueba pago─▶ Stripe
+                          (y /api/webhook-stripe de respaldo)
+                                           ──confirma──────▶ Rye: paga con tu saldo prepago
+                                                              y hace el pedido en la tienda
+ Seguimiento         ──▶  /api/pedido      ◀──estado/envío── Rye
 ```
 
-1. **Catálogo con productos concretos.** Hoy cada idea abre una búsqueda. Para comprar
-   dentro hace falta un producto exacto por idea y país (tienda, identificador, precio,
-   stock), actualizado a diario.
-2. **Checkout propio.** Dirección de envío y pago con una pasarela local (Mercado Pago en
-   Latinoamérica, Stripe en EE. UU. y España). Se cobra el precio de la tienda + envío +
-   impuestos + nuestro margen.
-3. **Pedido automático.** Al confirmarse el pago, el servidor hace el pedido en la tienda de
-   origen con la dirección del usuario, por API o por un intermediario que lo automatiza.
-4. **Seguimiento.** Se guarda el número de seguimiento de la tienda y se avisa al usuario por
-   correo o WhatsApp.
+- **Tú cobras primero.** El cliente paga a tu cuenta de Stripe el total de la tienda más tu
+  margen (`MARGEN_PORCENTAJE` + `MARGEN_FIJO_CENTAVOS`). Rye cobra el pedido de tu saldo
+  prepago en Rye (modo *drawdown*), así que la diferencia es tu ganancia.
+- **El precio lo calcula el servidor**, nunca la página, y se comprueba otra vez al confirmar.
+- **Si la tienda falla** (agotado, cotización caducada, error), el cliente recibe el reembolso
+  automáticamente.
+- **Sin base de datos:** el pedido vive en Rye y el pago en Stripe, enlazados por el número de
+  pedido que va en los metadatos del cobro.
+- **Sin claves funciona en modo demo:** pedidos y pagos simulados de principio a fin.
 
-Esto exige un **servidor** (la web actual es estática), una **base de datos de pedidos** y ser
-**vendedor**: Acierto pasa a ser responsable de devoluciones, garantías, facturas y quejas.
+## Qué hace falta para vender de verdad
 
-## Opciones para el paso 3
+No hay forma de cobrar tarjetas sin una cuenta de pagos verificada; es obligatorio por ley.
+Todo es en línea:
 
-| Opción | Qué hace | Dónde sirve | Límites |
-|---|---|---|---|
-| **Rye** (Universal Checkout API) | Convierte la URL de cualquier producto de Amazon, Shopify y otras tiendas en un pedido hecho | Solo envíos a EE. UU. | No sirve para Latinoamérica ni España por ahora |
-| **Violet** | Un solo checkout conectado a miles de tiendas Shopify, WooCommerce, Magento… | Tiendas que se dan de alta con Violet | La tienda tiene que aceptar vender a través de ti |
-| **Protocolos de compra con IA** (UCP de Google y Shopify, ACP de OpenAI y Stripe) | Estándares para que una app compre en tiendas que los adoptan | Tiendas adheridas, sobre todo en EE. UU. | Todavía en despliegue; hay que integrarse como plataforma |
-| **Acuerdos directos con tiendas locales** | La tienda te da su API o te manda los pedidos por correo o panel | Cualquier país | Hay que negociar tienda por tienda |
-| **Compra automática con un robot de navegador** | Un script entra en la tienda y compra con tu cuenta | Técnicamente, cualquiera | Suele violar los términos de Amazon y Mercado Libre, que pueden bloquear la cuenta; frágil ante cambios de la web |
+1. **Stripe** ([dashboard.stripe.com](https://dashboard.stripe.com/register)): cuenta con
+   identidad y cuenta bancaria. Copia las claves en `STRIPE_SECRET_KEY` y
+   `STRIPE_PUBLISHABLE_KEY`, y crea un webhook a `https://TU-DOMINIO/api/webhook-stripe`
+   con el evento `payment_intent.succeeded` (su secreto va en `STRIPE_WEBHOOK_SECRET`).
+2. **Rye** ([console.rye.com](https://console.rye.com)): clave de API en `RYE_API_KEY`.
+   Empieza con `RYE_ENTORNO=staging` (pedidos de prueba, sin compras reales); cuando funcione,
+   pasa a `production` y recarga el saldo prepago en su consola.
+3. **Productos:** en `productos.js`, la URL exacta del producto que se compra para cada idea.
+   En pruebas, todas usan el producto de la tienda de pruebas de Rye.
+4. **Publicar en Vercel** con la carpeta `regalo/` como raíz y esas variables en
+   *Settings → Environment Variables* (ver `.env.example`).
 
-Mercado Libre y Amazon **no ofrecen una API para comprar en nombre de terceros**: sus APIs son
-para vendedores y afiliados. En Latinoamérica, hoy, la vía realista para cobrar dentro es
-trabajar con tiendas que acepten (acuerdos directos o Violet) o vender tú como tienda.
+## Límites que hay que conocer
 
-## Plan por fases
-
-1. **Ahora: enlaces de afiliado por país.** El usuario compra en la tienda y Acierto cobra
-   comisión. Mercado Libre paga hasta un 15 % según la categoría y cuenta cualquier compra
-   hecha tras entrar por tu enlace. Amazon tiene su propio programa. No hay que gestionar
-   pagos ni devoluciones. Ya está preparado: se rellena `afiliados.js` y `npm run comisiones`
-   muestra la cobertura.
-2. **Siguiente: compra dentro en EE. UU.** Con Rye se puede tener checkout propio para envíos
-   a EE. UU. y validar si la gente compra más sin salir de la página.
-3. **Después: tiendas aliadas en Latinoamérica.** Cerrar acuerdos con tiendas de regalos,
-   experiencias (spas, talleres, catas) y tiendas Shopify locales; cobrar con Mercado Pago y
-   pasarles los pedidos. Las experiencias son lo más fácil: un código o un bono por correo,
-   sin envío físico.
+- **Solo envía a Estados Unidos.** Rye no envía fuera de EE. UU. todavía. El cliente puede
+  pagar desde cualquier país, pero el regalo tiene que ir a una dirección de EE. UU. Para
+  enviar a Latinoamérica o España no encontré ningún servicio que compre automáticamente;
+  habría que añadir otro proveedor en `servidor/` o tiendas aliadas.
+- **Eres el vendedor.** Devoluciones, quejas, contracargos e impuestos sobre tu margen son
+  tuyos. Deja claras las condiciones de venta y de devolución en la web antes de abrir.
+- **Los precios cambian.** La cotización es del momento; si caduca antes de pagar, se pide otra.
+- **Stripe cobra ~2,9 % + 0,30 USD por pago**: el margen por defecto (15 % + 1 USD) lo cubre.
 
 ## Fuentes
 
+- SDK oficial de Rye: [rye-com/checkout-intents-python](https://github.com/rye-com/checkout-intents-python) (API y flujo de dos fases)
 - [Rye: Universal Checkout API](https://rye.com/products/universal-checkout-api) y [preguntas frecuentes (envíos solo a EE. UU.)](https://docs.rye.com/faq)
-- [Violet: Unified Checkout API](https://violet.io/)
-- [Universal Commerce Protocol — Google Developers](https://developers.googleblog.com/under-the-hood-universal-commerce-protocol-ucp/)
-- [Agentic Commerce Protocol — Stripe](https://stripe.com/blog/developing-an-open-standard-for-agentic-commerce)
-- [Programa de afiliados de Mercado Libre](https://www.mercadolibre.com.mx/l/afiliados)
+- [Stripe Payment Element](https://docs.stripe.com/payments/payment-element) y [firmas de webhooks](https://docs.stripe.com/webhooks/signature)

@@ -1,7 +1,9 @@
 # Acierto
 
-Web para encontrar el regalo perfecto en dos clics: eliges una categoría, eliges un regalo y el
-botón te lleva a la tienda con la búsqueda hecha. Sin registro y sin preguntas.
+Web para encontrar el regalo perfecto: eliges una categoría, eliges un regalo y lo **compras
+ahí mismo**. Pones la dirección de envío, ves el precio final y pagas en la página; el servidor
+hace el pedido en la tienda donde está el producto (Amazon, Shopify y otras, vía Rye) y cobra
+tu margen. Detalle y requisitos en [`compra-directa.md`](compra-directa.md).
 
 Las categorías se organizan por situación y con nombre propio: **Misión imposible** (lo tiene
 todo), **Salvavidas de último minuto**, **Caprichos que nunca se compraría**, **Menos cosas, más
@@ -11,17 +13,18 @@ planes**, **Lagrimita garantizada**, **Fan nivel experto**, **Quedar bien gastan
 
 Los textos están en español neutro. En la primera visita el usuario elige **país y moneda**:
 los precios se muestran en su moneda con el tipo de cambio del día (si no hay conexión con el
-servicio de cambio, se ven como $, $$ o $$$) y el botón lleva a una tienda que envía a su país:
-Mercado Libre en Argentina, Chile, Colombia, Ecuador, México, Perú y Uruguay; Amazon en
-EE. UU., Puerto Rico y España; Google Shopping en el resto.
+servicio de cambio, se ven como $, $$ o $$$). Las ideas que aún no tienen producto para comprar
+dentro llevan a una tienda que envía a su país: Mercado Libre en Argentina, Chile, Colombia,
+Ecuador, México, Perú y Uruguay; Amazon en EE. UU., Puerto Rico y España; Google Shopping en el
+resto.
 
 ```bash
-npm test     # pruebas del catálogo y de los enlaces de compra
-npm start    # abre http://localhost:5174
+npm test     # pruebas del catálogo, los enlaces y el proceso de compra
+npm start    # web + API en http://localhost:5174 (modo demo sin claves; ver .env.example)
 ```
 
-Es HTML y JavaScript sin dependencias ni compilación: se publica tal cual en cualquier hosting
-estático (Vercel, Netlify, GitHub Pages).
+Se publica en Vercel con `regalo/` como raíz: la web es estática y `api/` son funciones. En un
+hosting solo estático también funciona, pero los botones vuelven a llevar a la tienda.
 
 | Archivo | Qué hace |
 |---|---|
@@ -30,8 +33,11 @@ estático (Vercel, Netlify, GitHub Pages).
 | `afiliados.js` | Tus cuentas de afiliado (lo único que hay que rellenar para cobrar) |
 | `tienda.js` | Enlace de compra según el país y precio en la moneda elegida |
 | `app.js` / `index.html` | Portada de categorías, vista de cada categoría y «Sorpréndeme» |
+| `checkout.js` | Compra dentro de la página: dirección, precio final, pago y seguimiento |
+| `productos.js` | Producto exacto que se compra para cada idea |
+| `api/` + `servidor/` | Cotizar y pedir en la tienda (Rye), cobrar y reembolsar (Stripe) |
 
-## Cobrar comisión
+## Cobrar comisión (cuando no hay compra dentro)
 
 Todo se configura en [`afiliados.js`](afiliados.js); no hace falta tocar nada más. En cada país
 el botón usa la primera tienda donde tengas cuenta y, si no tienes ninguna, lleva igual a la
@@ -49,8 +55,6 @@ npm run comisiones   # país por país: a qué tienda va el botón y cuántas id
 
 Con solo la etiqueta de amazon.com, cobran 19 de los 20 países (España necesita la suya). El pie
 de página muestra el aviso de afiliado que exige Amazon en cuanto hay alguna cuenta configurada.
-
-Cómo pasar a que el usuario pague dentro de Acierto: [`compra-directa.md`](compra-directa.md).
 
 ## Qué existe ya
 
