@@ -26,12 +26,31 @@ estático (Vercel, Netlify, GitHub Pages).
 | Archivo | Qué hace |
 |---|---|
 | `catalogo.js` | Categorías y las ideas, cada una con su «por qué acierta», precio y plazo |
-| `paises.js` | Países, moneda por defecto, tienda de cada país y códigos de afiliado |
+| `paises.js` | Países, moneda por defecto y tiendas de cada país por orden de preferencia |
+| `afiliados.js` | Tus cuentas de afiliado (lo único que hay que rellenar para cobrar) |
 | `tienda.js` | Enlace de compra según el país y precio en la moneda elegida |
 | `app.js` / `index.html` | Portada de categorías, vista de cada categoría y «Sorpréndeme» |
 
-Para cobrar comisión, añade tus códigos de afiliado en `AFILIADOS` (`paises.js`). Cómo pasar a
-que el usuario pague dentro de Acierto: [`compra-directa.md`](compra-directa.md).
+## Cobrar comisión
+
+Todo se configura en [`afiliados.js`](afiliados.js); no hace falta tocar nada más. En cada país
+el botón usa la primera tienda donde tengas cuenta y, si no tienes ninguna, lleva igual a la
+tienda pero sin comisión.
+
+| Programa | Qué pide | Dónde paga | Qué pegar en `afiliados.js` |
+|---|---|---|---|
+| [Amazon Afiliados](https://affiliate-program.amazon.com/) (amazon.com) | Registro en línea, identificación fiscal y cuenta bancaria; 3 ventas en 180 días para mantener la cuenta | EE. UU., Puerto Rico y el resto de América con envío internacional | La etiqueta en `AMAZON.com` |
+| [Amazon México](https://afiliados.amazon.com.mx/) y [Amazon España](https://afiliados.amazon.es/) | Lo mismo, una cuenta por cada Amazon | México / España | `AMAZON['com.mx']` / `AMAZON.es` |
+| [Mercado Libre Afiliados](https://www.mercadolibre.com.mx/l/afiliados) | Cuenta de Mercado Libre y Mercado Pago, mayor de edad, no ser vendedor | México, Chile y Argentina (allí, de momento, monotributistas) | Un enlace generado por idea en `MERCADOLIBRE.MX`, `.CL` o `.AR` |
+
+```bash
+npm run comisiones   # país por país: a qué tienda va el botón y cuántas ideas cobran
+```
+
+Con solo la etiqueta de amazon.com, cobran 19 de los 20 países (España necesita la suya). El pie
+de página muestra el aviso de afiliado que exige Amazon en cuanto hay alguna cuenta configurada.
+
+Cómo pasar a que el usuario pague dentro de Acierto: [`compra-directa.md`](compra-directa.md).
 
 ## Qué existe ya
 

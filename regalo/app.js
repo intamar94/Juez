@@ -1,7 +1,7 @@
 import { CATEGORIAS, IDEAS } from './catalogo.js';
 import { bandera, MONEDAS, nombreMoneda, PAISES, paisDelIdioma } from './paises.js';
 import {
-  categoria, enlaceCompra, ideasDe, NIVELES, PLAZOS, precioLocal, sorpresa, textoCompra, textoNivel,
+  categoria, dondeComprar, enlaceCompra, hayAfiliados, ideasDe, NIVELES, PLAZOS, precioLocal, sorpresa, textoCompra, textoNivel,
 } from './tienda.js';
 
 const $ = (id) => document.getElementById(id);
@@ -36,6 +36,7 @@ function conColor(nodo, color) {
 function iniciar() {
   pintarCategorias();
   prepararRegion();
+  $('aviso-afiliados').hidden = !hayAfiliados();
   $('sorprendeme').addEventListener('click', abrirSorpresa);
   $('otra-sorpresa').addEventListener('click', pintarSorpresa);
   $('cerrar-sorpresa').addEventListener('click', () => $('dialogo-sorpresa').close());
@@ -203,6 +204,8 @@ function pintarCategoria(c) {
 function tarjeta(idea) {
   const { pais, moneda } = regionActual();
   const precio = precioLocal(idea, moneda, tasas, pais) ?? textoNivel(idea);
+  const esProducto = idea.tipo !== 'experiencia' && idea.tipo !== 'tiempo';
+  const patrocinado = esProducto && dondeComprar(idea, pais).comision;
   return el('article', { className: 'idea' },
     el('div', { className: 'arriba' },
       el('span', { textContent: TIPOS[idea.tipo] }),
@@ -212,7 +215,7 @@ function tarjeta(idea) {
     el('p', { textContent: idea.porque }),
     el('span', { className: 'precio', textContent: precio }),
     el('a', {
-      className: 'comprar', href: enlaceCompra(idea, pais), target: '_blank', rel: 'noopener',
+      className: 'comprar', href: enlaceCompra(idea, pais), target: '_blank', rel: patrocinado ? 'sponsored noopener' : 'noopener',
       textContent: textoCompra(idea, pais),
     }),
   );

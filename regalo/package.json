@@ -6,6 +6,7 @@
   "description": "Acierto: encuentra el regalo perfecto por categorías y cómpralo en un clic.",
   "scripts": {
     "test": "node --test test/*.test.js",
-    "start": "npx --yes serve -l 5174 ."
+    "start": "npx --yes serve -l 5174 .",
+    "comisiones": "node scripts/comisiones.js"
   }
 }

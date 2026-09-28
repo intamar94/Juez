@@ -1,5 +1,6 @@
 import { CATEGORIAS, IDEAS } from './catalogo.js';
-import { AFILIADOS, NOMBRE_TIENDA, PAIS_POR_DEFECTO, PAISES } from './paises.js';
+import { AMAZON, MERCADOLIBRE } from './afiliados.js';
+import { NOMBRE_TIENDA, PAIS_POR_DEFECTO, PAISES } from './paises.js';
 
 export const PLAZOS = {
   hoy: 'Lo tienes hoy',
@@ -31,37 +32,60 @@ export function slug(texto) {
     .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 
-const ENLACES = {
-  mercadolibre: (q, p) => `https://listado.mercadolibre.${p.dominio}/${slug(q)}`,
-  amazon: (q, p) => {
-    const url = `https://www.amazon.${p.dominio}/s?k=${encodeURIComponent(q)}`;
-    return AFILIADOS.amazon ? `${url}&tag=${encodeURIComponent(AFILIADOS.amazon)}` : url;
-  },
-  google: (q, _p, codigo) =>
-    `https://www.google.com/search?tbm=shop&gl=${codigo.toLowerCase()}&hl=es&q=${encodeURIComponent(q)}`,
-};
-
 function esPlan(idea) {
   return idea.tipo === 'experiencia' || idea.tipo === 'tiempo';
 }
 
+/** Enlace con comisión para esa idea en esa tienda, o null si no hay cuenta de afiliado. */
+function enlaceAfiliado(idea, tienda, codigo) {
+  if (tienda.tienda === 'amazon') {
+    const etiqueta = AMAZON[tienda.dominio];
+    return etiqueta ? `${enlaceNormal(idea, tienda, codigo)}&tag=${encodeURIComponent(etiqueta)}` : null;
+  }
+  if (tienda.tienda === 'mercadolibre') return MERCADOLIBRE[codigo]?.[idea.id] ?? null;
+  return null;
+}
+
+function enlaceNormal(idea, tienda, codigo) {
+  const q = idea.busqueda;
+  if (tienda.tienda === 'mercadolibre') return `https://listado.mercadolibre.${tienda.dominio}/${slug(q)}`;
+  if (tienda.tienda === 'amazon') {
+    // amazon.com se abre en español; los demás Amazon ya están en español.
+    const idioma = tienda.dominio === 'com' ? '&language=es_US' : '';
+    return `https://www.amazon.${tienda.dominio}/s?k=${encodeURIComponent(q)}${idioma}`;
+  }
+  return `https://www.google.com/search?tbm=shop&gl=${codigo.toLowerCase()}&hl=es&q=${encodeURIComponent(q)}`;
+}
+
 /**
- * A dónde lleva el botón. Los productos van a la tienda del país (Mercado Libre, Amazon o
- * Google Shopping); los planes abren una búsqueda en ese país para reservarlos.
+ * Dónde se compra una idea en un país: la primera tienda donde tengas cuenta de afiliado
+ * y, si no hay ninguna, la primera de la lista. Devuelve { tienda, url, comision }.
+ */
+export function dondeComprar(idea, codigo = PAIS_POR_DEFECTO) {
+  const pais = PAISES[codigo] ? codigo : PAIS_POR_DEFECTO;
+  const { tiendas } = PAISES[pais];
+  for (const tienda of tiendas) {
+    const url = enlaceAfiliado(idea, tienda, pais);
+    if (url) return { tienda: tienda.tienda, url, comision: true };
+  }
+  return { tienda: tiendas[0].tienda, url: enlaceNormal(idea, tiendas[0], pais), comision: false };
+}
+
+/**
+ * A dónde lleva el botón. Los productos van a la tienda elegida por `dondeComprar`; los planes
+ * abren una búsqueda en ese país para reservarlos.
  */
 export function enlaceCompra(idea, codigo = PAIS_POR_DEFECTO) {
-  const pais = PAISES[codigo] ?? PAISES[PAIS_POR_DEFECTO];
-  if (esPlan(idea)) {
-    const q = idea.tipo === 'experiencia' ? `${idea.busqueda} ${pais.nombre}` : idea.busqueda;
-    return `https://www.google.com/search?gl=${codigo.toLowerCase()}&hl=es&q=${encodeURIComponent(q)}`;
-  }
-  return ENLACES[pais.tienda](idea.busqueda, pais, codigo);
+  if (!esPlan(idea)) return dondeComprar(idea, codigo).url;
+  const pais = PAISES[codigo] ? codigo : PAIS_POR_DEFECTO;
+  const q = idea.tipo === 'experiencia' ? `${idea.busqueda} ${PAISES[pais].nombre}` : idea.busqueda;
+  return `https://www.google.com/search?gl=${pais.toLowerCase()}&hl=es&q=${encodeURIComponent(q)}`;
 }
 
 export function textoCompra(idea, codigo = PAIS_POR_DEFECTO) {
   if (idea.tipo === 'experiencia') return 'Reservar';
   if (idea.tipo === 'tiempo') return 'Ver cómo';
-  const tienda = NOMBRE_TIENDA[(PAISES[codigo] ?? PAISES[PAIS_POR_DEFECTO]).tienda];
+  const tienda = NOMBRE_TIENDA[dondeComprar(idea, codigo).tienda];
   return tienda === 'tiendas' ? 'Comprar' : `Comprar en ${tienda}`;
 }
 
@@ -102,4 +126,10 @@ export function ideasDe(idCategoria, { nivel: soloNivel = null } = {}, ideas = I
 export function sorpresa(anterior = null, azar = Math.random, ideas = IDEAS) {
   const opciones = ideas.length > 1 ? ideas.filter((i) => i.id !== anterior) : ideas;
   return opciones[Math.floor(azar() * opciones.length)];
+}
+
+/** ¿Hay alguna cuenta de afiliado configurada? Sirve para mostrar el aviso legal. */
+export function hayAfiliados() {
+  return Object.values(AMAZON).some(Boolean)
+    || Object.values(MERCADOLIBRE).some((enlaces) => Object.keys(enlaces).length > 0);
 }

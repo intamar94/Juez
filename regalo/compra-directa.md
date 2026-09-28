@@ -46,9 +46,8 @@ trabajar con tiendas que acepten (acuerdos directos o Violet) o vender tú como 
 1. **Ahora: enlaces de afiliado por país.** El usuario compra en la tienda y Acierto cobra
    comisión. Mercado Libre paga hasta un 15 % según la categoría y cuenta cualquier compra
    hecha tras entrar por tu enlace. Amazon tiene su propio programa. No hay que gestionar
-   pagos ni devoluciones. En Amazon basta con poner tu etiqueta en `AFILIADOS` (`paises.js`);
-   en Mercado Libre los enlaces de afiliado se generan en su panel, así que habría que guardar
-   un enlace generado por idea y país en el catálogo.
+   pagos ni devoluciones. Ya está preparado: se rellena `afiliados.js` y `npm run comisiones`
+   muestra la cobertura.
 2. **Siguiente: compra dentro en EE. UU.** Con Rye se puede tener checkout propio para envíos
    a EE. UU. y validar si la gente compra más sin salir de la página.
 3. **Después: tiendas aliadas en Latinoamérica.** Cerrar acuerdos con tiendas de regalos,

@@ -1,9 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { CATEGORIAS, IDEAS, INTERESES } from '../catalogo.js';
-import { AFILIADOS, bandera, MONEDAS, NOMBRE_TIENDA, PAISES, paisDelIdioma } from '../paises.js';
+import { AMAZON, MERCADOLIBRE } from '../afiliados.js';
+import { bandera, MONEDAS, NOMBRE_TIENDA, PAISES, paisDelIdioma } from '../paises.js';
 import {
-  enlaceCompra, ideasDe, nivel, PLAZOS, precioLocal, redondear, slug, sorpresa, textoCompra, textoNivel,
+  dondeComprar, enlaceCompra, hayAfiliados, ideasDe, nivel, PLAZOS, precioLocal, redondear, slug, sorpresa, textoCompra, textoNivel,
 } from '../tienda.js';
 
 test('el catálogo es coherente', () => {
@@ -83,35 +84,72 @@ test('sorpresa no repite la anterior', () => {
   assert.notEqual(a.id, b.id);
 });
 
-test('cada país tiene tienda y moneda válidas', () => {
+test('cada país tiene tiendas y moneda válidas', () => {
   for (const [codigo, p] of Object.entries(PAISES)) {
-    assert.ok(NOMBRE_TIENDA[p.tienda], `${codigo}: tienda ${p.tienda}`);
+    assert.ok(p.tiendas.length > 0, `${codigo} sin tiendas`);
+    for (const t of p.tiendas) {
+      assert.ok(NOMBRE_TIENDA[t.tienda], `${codigo}: tienda ${t.tienda}`);
+      if (t.tienda !== 'google') assert.ok(t.dominio, `${codigo} sin dominio`);
+      if (t.tienda === 'amazon') assert.ok(t.dominio in AMAZON, `${codigo}: amazon.${t.dominio} sin hueco en afiliados.js`);
+    }
     assert.ok(MONEDAS.includes(p.moneda), `${codigo}: moneda ${p.moneda}`);
-    if (p.tienda !== 'google') assert.ok(p.dominio, `${codigo} sin dominio`);
     assert.doesNotThrow(() => new Intl.NumberFormat(`es-${codigo}`, { style: 'currency', currency: p.moneda }));
   }
 });
 
-test('el enlace de compra depende del país', () => {
-  const termo = IDEAS.find((i) => i.id === 'botella-termo');
-  assert.equal(enlaceCompra(termo, 'MX'), 'https://listado.mercadolibre.com.mx/termo-acero-inoxidable');
+const termo = IDEAS.find((i) => i.id === 'botella-termo');
+
+/** Rellena afiliados.js durante una prueba y lo deja como estaba. */
+function conAfiliados(amazon, ml, fn) {
+  const antes = { amazon: { ...AMAZON }, ml: structuredClone(MERCADOLIBRE) };
+  Object.assign(AMAZON, amazon);
+  for (const [pais, enlaces] of Object.entries(ml)) MERCADOLIBRE[pais] = { ...MERCADOLIBRE[pais], ...enlaces };
+  try {
+    fn();
+  } finally {
+    Object.assign(AMAZON, antes.amazon);
+    for (const pais of Object.keys(MERCADOLIBRE)) MERCADOLIBRE[pais] = antes.ml[pais];
+  }
+}
+
+test('sin afiliados, el botón va a la primera tienda del país sin comisión', () => {
+  assert.deepEqual(dondeComprar(termo, 'MX'),
+    { tienda: 'mercadolibre', url: 'https://listado.mercadolibre.com.mx/termo-acero-inoxidable', comision: false });
   assert.equal(textoCompra(termo, 'MX'), 'Comprar en Mercado Libre');
   assert.match(enlaceCompra(termo, 'ES'), /^https:\/\/www\.amazon\.es\/s\?k=termo/);
   assert.match(enlaceCompra(termo, 'CR'), /tbm=shop&gl=cr/);
   assert.equal(textoCompra(termo, 'CR'), 'Comprar');
-  const spa = IDEAS.find((i) => i.id === 'spa-masaje');
-  assert.match(decodeURIComponent(enlaceCompra(spa, 'CO')), /gl=co.*Colombia$/);
+  assert.ok(!enlaceCompra(termo, 'US').includes('tag='));
+  assert.ok(!hayAfiliados());
 });
 
-test('el afiliado de Amazon solo se añade si está configurado', () => {
-  const termo = IDEAS.find((i) => i.id === 'botella-termo');
-  assert.ok(!enlaceCompra(termo, 'US').includes('tag='));
-  AFILIADOS.amazon = 'acierto-20';
-  try {
+test('con etiqueta de Amazon, cobran también los países que no tienen otra cuenta', () => {
+  conAfiliados({ com: 'acierto-20' }, {}, () => {
     assert.ok(enlaceCompra(termo, 'US').endsWith('&tag=acierto-20'));
-  } finally {
-    AFILIADOS.amazon = '';
-  }
+    const cr = dondeComprar(termo, 'CR');
+    assert.equal(cr.tienda, 'amazon');
+    assert.ok(cr.comision);
+    assert.equal(textoCompra(termo, 'CR'), 'Comprar en Amazon');
+    // España usa su propio Amazon: la etiqueta de amazon.com no vale allí.
+    assert.equal(dondeComprar(termo, 'ES').comision, false);
+    // México prueba Mercado Libre y amazon.com.mx antes de caer en amazon.com.
+    assert.match(enlaceCompra(termo, 'MX'), /amazon\.com\/s\?.*language=es_US&tag=acierto-20$/);
+    assert.ok(hayAfiliados());
+  });
+});
+
+test('Mercado Libre con enlace de afiliado gana a Amazon, idea por idea', () => {
+  const enlace = 'https://mercadolibre.com/sec/abc123';
+  conAfiliados({ 'com.mx': 'acierto-mx-20' }, { MX: { 'botella-termo': enlace } }, () => {
+    assert.equal(enlaceCompra(termo, 'MX'), enlace);
+    const toalla = IDEAS.find((i) => i.id === 'toalla-grande');
+    assert.match(enlaceCompra(toalla, 'MX'), /amazon\.com\.mx.*tag=acierto-mx-20/);
+  });
+});
+
+test('los planes se reservan en el país, no en una tienda', () => {
+  const spa = IDEAS.find((i) => i.id === 'spa-masaje');
+  assert.match(decodeURIComponent(enlaceCompra(spa, 'CO')), /gl=co.*Colombia$/);
 });
 
 test('slug quita tildes y espacios', () => {
