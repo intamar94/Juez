@@ -1,31 +1,405 @@
 import { IDEAS } from './catalogo.js';
 import { abrirCheckout, iniciarCheckout, sePuedeComprar } from './checkout.js';
 import { bandera, MONEDAS, nombreMoneda, PAISES, paisDelIdioma } from './paises.js';
-import { enlaceCompra, textoCompra } from './tienda.js';
+import { enlaceCompra, textoCompra, sorpresa } from './tienda.js';
 
-const $=id=>document.getElementById(id); const REGION_KEY='acierto.region'; let region=read(REGION_KEY); let tasas=null; let currentIdeas=[]; let activeFilter='all';
-const INTERESTS={cocina:['cocina','cocinar','chef','receta','gastronom'],cafe:['café','cafe','barista'],bebidas:['vino','cerveza','whisky','ron','gin'],deporte:['fútbol','futbol','tenis','golf','correr','deporte','ciclismo','escalada','yoga','fitness'],naturaleza:['montaña','senderismo','naturaleza','campo','jardín','jardin','aire libre'],viajes:['viaja','viajes','viajar','avión','avion','turismo'],lectura:['libro','leer','lectura'],musica:['música','musica','concierto','guitarra','banda'],cine:['cine','película','pelicula','series','netflix'],juegos:['juego de mesa','juegos'],videojuegos:['videojuego','gaming','playstation','xbox','nintendo'],tecnologia:['tecnología','tecnologia','programador','programación','informatica','informática','computación','ordenador','pc'],plantas:['plantas','jardín','jardin','botánica','botanica'],manualidades:['arte','pinta','dibuj','cerámica','ceramica','manualidad'],bienestar:['spa','relaj','bienestar','cuidado','autocuidado'],mascotas:['perro','gato','mascota'],moda:['moda','ropa','zapatos','sneaker'],foto:['fotografía','fotografia','cámara','camara']};
-const REL={pareja:['pareja','novio','novia','espos','esposa','marido'],familia:['madre','mamá','mama','padre','papá','papa','suegra','suegro','hermano','hermana','abuelo','abuela','hijo','hija','familia'],amistad:['amigo','amiga'],trabajo:['jefe','jefa','compañero','compañera','colega','profesor','profesora']};
-const OCC={graduacion:['graduación','graduacion','grado','se gradúa','se gradua','doctorado','tesis'],cumpleanos:['cumpleaños','cumple'],aniversario:['aniversario'],navidad:['navidad'],jubilacion:['jubilación','jubilacion','retira','retiro'],nuevoTrabajo:['nuevo trabajo','nuevo puesto','ascenso','promoción','promocion']};
-function read(k){try{return JSON.parse(localStorage.getItem(k))}catch{return null}} function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
-function init(){setupRegion();setupExamples();$('encontrar').onclick=run;$('persona').addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter')run()});$('editar').onclick=()=>{$('resultados-section').style.display='none';$('persona').focus();window.scrollTo({top:0,behavior:'smooth'})};iniciarCheckout(()=>({...regionActual(),tasas})).then(()=>renderResults())}
-function setupExamples(){document.querySelectorAll('.example').forEach(b=>b.onclick=()=>{const key=b.textContent.replace(/^\S+\s/,'');const map={'Científica que se gradúa':'Mi amiga es científica, trabaja en un laboratorio y acaba de terminar su doctorado. Le gusta la astronomía, es curiosa y ya tiene muchísimas cosas relacionadas con su trabajo.','Piloto que ya tiene de todo':'Mi hermano es piloto comercial, viaja mucho, tiene casi todo el equipo que necesita y es muy práctico. Le encanta la aviación y también salir a correr.','Amigo obsesionado con cocinar':'Mi mejor amigo tiene 34 años y está obsesionado con cocinar. Tiene una cocina muy equipada, le encanta probar recetas nuevas y descubrir ingredientes de otros países.','Pareja a distancia':'Mi pareja vive en otro país. Nos gustan los viajes, la fotografía y tenemos muchos recuerdos juntos. Quiero algo personal que nos haga sentir cerca.','Alguien difícil de regalar':'Es una persona que siempre dice que no necesita nada. Tiene de todo, es bastante minimalista y prefiere experiencias a acumular objetos.'};$('persona').value=map[key]||'';run()})}
-function setupRegion(){const p=$('pais'),m=$('moneda');Object.entries(PAISES).forEach(([c,x])=>p.append(new Option(bandera(c)+' '+x.nombre,c)));MONEDAS.forEach(x=>m.append(new Option(x+' · '+nombreMoneda(x),x)));p.onchange=()=>m.value=PAISES[p.value].moneda;$('region').onclick=openRegion;$('close-region').onclick=()=>$('dialogo-region').close();$('form-region').onsubmit=()=>{region={pais:p.value,moneda:m.value};save(REGION_KEY,region);paintRegion()};paintRegion()}
-function regionActual(){if(region&&PAISES[region.pais])return region;const pais=paisDelIdioma(navigator.languages||[navigator.language]);return{pais,moneda:PAISES[pais].moneda}} function openRegion(){const r=regionActual();$('pais').value=r.pais;$('moneda').value=r.moneda;$('dialogo-region').showModal()} function paintRegion(){const r=regionActual();$('region').textContent=bandera(r.pais)+' '+r.moneda}
-function extract(text){const t=text.toLowerCase();const p={interests:[],relations:[],occasions:[],age:null,signals:[],avoid:[],custom:false};for(const [k,w] of Object.entries(INTERESTS))if(w.some(x=>t.includes(x)))p.interests.push(k);for(const [k,w] of Object.entries(REL))if(w.some(x=>t.includes(x)))p.relations.push(k);for(const [k,w] of Object.entries(OCC))if(w.some(x=>t.includes(x)))p.occasions.push(k);const age=t.match(/\b(\d{2})\s*(?:años|anos)\b/);if(age)p.age=Number(age[1]);if(/no necesita nada|tiene de todo|ya tiene todo|difícil de regalar|dificil de regalar|minimalista/.test(t)){p.avoid.push('genéricos');p.signals.push('Tiene de todo / no necesita otro regalo genérico')}if(/práctic|practic|arreglar|taller|herramient/.test(t))p.signals.push('Le gusta hacer y arreglar cosas');if(/personal|recuerdo|emocion|sentimental|cerca|distancia/.test(t))p.signals.push('El contexto emocional importa');if(/sorpresa|original|único|unico|raro|diferente/.test(t))p.signals.push('Busca algo poco común');if(/gradu|doctorado|tesis|certific|licencia/.test(t))p.signals.push('Momento profesional importante');p.custom=/personal|nombre|foto|recuerdo|historia|fecha|ilustr|canción|cancion|vídeo|video/.test(t);return p}
-function score(i,p){let s=0;for(const x of p.interests)if((i.intereses||[]).includes(x))s+=7;for(const x of p.relations)if((i.relaciones||[]).includes(x))s+=3;if(p.age){const b=p.age<13?'nino':p.age<25?'joven':p.age<60?'adulto':'mayor';if(!i.edades||i.edades.includes(b))s+=2;else s-=5}for(const o of p.occasions)if(i.categorias&&((o==='graduacion'&&i.categorias.includes('su-obsesion'))||(o==='cumpleanos'&&i.categorias.includes('con-historia'))||(o==='aniversario'&&i.categorias.includes('con-historia'))||(o==='jubilacion'&&i.tipo==='experiencia')))s+=4;if(p.avoid.length&&['experiencia','digital','consumible','tiempo'].includes(i.tipo))s+=4;if(p.custom&&i.categorias&&i.categorias.includes('con-historia'))s+=5;return s}
-function analyze(text){const p=extract(text);currentIdeas=IDEAS.map(i=>Object.assign({},i,{_score:score(i,p)})).sort((a,b)=>b._score-a._score);return p}
-function rankWithProfile(p){const terms=[...(p.interests||[]),...(p.professions||[]),...(p.skills||[]),...(p.personality||[]),...(p.environment||[]),...(p.habits||[]),...(p.style||[]),...(p.semantic_tags||[]),...(p.latent_gift_opportunities||[])].map(normalize);const avoid=(p.anti_gift_signals||[]).map(normalize);return IDEAS.map(i=>{const hay=normalize([i.nombre,i.porque,i.tipo,...(i.intereses||[]),...(i.categorias||[]),i.busqueda].join(' '));let value=0;for(const term of terms)if(term&&hay.includes(term))value+=7;for(const term of avoid)if(term&&hay.includes(term))value-=8;if(p.age){const bucket=p.age<13?'nino':p.age<25?'joven':p.age<60?'adulto':'mayor';if(!i.edades||i.edades.includes(bucket))value+=2;else value-=4}if((p.emotional_intent||[]).some(x=>/recuerdo|cerca|amor|emocion|sorpresa|agrade|celebr|acompañar/i.test(x))&&i.categorias?.includes('con-historia'))value+=6;if((p.anti_gift_signals||[]).some(x=>/todo|nada|minimal|acumul|objeto|cosas/i.test(x))&&['experiencia','digital','tiempo','consumible'].includes(i.tipo))value+=5;if((p.latent_gift_opportunities||[]).some(x=>/personal|historia|recuerdo|experiencia|humor|único|unico|crear/i.test(x))&&i.categorias?.includes('con-historia'))value+=4;return Object.assign({},i,{_score:value})}).sort((a,b)=>b._score-a._score)}
-function normalize(value){return String(value||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9áéíóúñü ]/gi,' ').replace(/\s+/g,' ').trim()}
-async function run(){const text=$('persona').value.trim();if(text.length<12){$('persona').focus();return}const button=$('encontrar');button.disabled=true;button.textContent='🧠 Entendiendo a la persona…';$('resultados-section').style.display='block';$('summary').textContent='Estamos extrayendo lo importante: contexto, personalidad, intereses, restricciones y oportunidades de regalo.';$('signals').replaceChildren();$('resultados').innerHTML='<div class="empty">🧠 Analizando la descripción…</div>';$('resultados-section').scrollIntoView({behavior:'smooth',block:'start'});try{const response=await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})});if(!response.ok)throw new Error('AI_UNAVAILABLE');const profile=await response.json();currentIdeas=rankWithProfile(profile);renderProfile(profile)}catch(error){const p=analyze(text);p.source='fallback';renderProfile(p)}finally{button.disabled=false;button.textContent='✨ Encontrar regalos'}}
-function renderProfile(p){const bits=[];if(p.age)bits.push('tiene '+p.age+' años');if(p.relationship)bits.push('es '+p.relationship);if((p.professions||[]).length)bits.push(p.professions.slice(0,2).join(' / '));if((p.interests||[]).length)bits.push('le interesa '+p.interests.slice(0,3).join(', '));if((p.anti_gift_signals||p.avoid||[]).length)bits.push('evitamos regalos genéricos');$('summary').textContent=p.summary||('Por lo que cuentas, '+bits.join(', ')+'. Hemos usado ese contexto para ordenar las ideas sin hacerte más preguntas.');const s=$('signals');s.replaceChildren();const items=[];if(p.age)items.push('🎂 '+p.age+' años');if(p.relationship)items.push('👥 '+p.relationship);(p.professions||[]).slice(0,2).forEach(x=>items.push('💼 '+x));(p.interests||[]).slice(0,4).forEach(x=>items.push('♡ '+x));(p.occasion?[p.occasion]:[]).filter(Boolean).forEach(x=>items.push('📅 '+x));(p.latent_gift_opportunities||[]).slice(0,2).forEach(x=>items.push('✦ '+x));if(p.source==='fallback')items.push('⚡ análisis local');items.slice(0,8).forEach(x=>{const b=document.createElement('span');b.className='signal';b.textContent=x;s.append(b)});renderFilters();renderCards()}
-function labelInterest(i){return({cocina:'cocina',cafe:'café',bebidas:'bebidas',deporte:'deporte',naturaleza:'naturaleza',viajes:'viajes',lectura:'lectura',musica:'música',cine:'cine',juegos:'juegos',videojuegos:'videojuegos',tecnologia:'tecnología',plantas:'plantas',manualidades:'arte',bienestar:'bienestar',mascotas:'mascotas',moda:'moda',foto:'fotografía'})[i]||i}
-function renderFilters(){const f=$('filters');f.replaceChildren();[['all','Todo'],['personal','❤️ Más personales'],['experience','🎟️ Experiencias'],['unusual','✨ Poco comunes'],['fast','⚡ Para hoy']].forEach(([id,label])=>{const b=document.createElement('button');b.className='filter'+(activeFilter===id?' active':'');b.textContent=label;b.onclick=()=>{activeFilter=id;renderFilters();renderCards()};f.append(b)})}
-function filtered(){return currentIdeas.filter(i=>{if(activeFilter==='personal')return i.categorias&&i.categorias.includes('con-historia')||i.tipo==='tiempo';if(activeFilter==='experience')return i.tipo==='experiencia';if(activeFilter==='unusual')return i.categorias&&(i.categorias.includes('su-obsesion')||i.categorias.includes('lo-tiene-todo'));if(activeFilter==='fast')return i.plazo==='hoy';return true}).slice(0,12)}
-function renderCards(){const out=$('resultados');out.replaceChildren();const list=filtered();const groups=[['🎯 Aciertos principales',list.slice(0,3)],['✨ Otras ideas que encajan',list.slice(3,8)]];groups.forEach(g=>{if(!g[1].length)return;const sec=document.createElement('section');sec.innerHTML='<div class="section-title"><h3>'+g[0]+'</h3><span>'+g[1].length+' ideas seleccionadas</span></div><div class="cards"></div>';const cards=sec.querySelector('.cards');g[1].forEach((idea,idx)=>cards.append(card(idea,idx===0)));out.append(sec)});if(!list.length)out.innerHTML='<div class="empty">No encontramos una combinación clara con ese filtro. Prueba con “Todo”.</div>'}
-function card(i,featured){const r=regionActual();const article=document.createElement('article');article.className='card'+(featured?' featured':'');const type={objeto:'🎁 Objeto',consumible:'🍯 Consumible',experiencia:'🎟️ Experiencia',digital:'📲 Digital',tiempo:'💛 Hecho por ti'}[i.tipo]||'🎁 Regalo';const price=i.precio&&i.precio[0]===0?'Gratis / hecho por ti':currency(i.precio&&i.precio[0]||0,r.moneda)+' – '+currency(i.precio&&i.precio[1]||0,r.moneda);article.innerHTML='<div class="card-top"><span>'+type+'</span><span class="match">'+(i._score>10?'Encaja especialmente bien':'Puede encajar')+'</span></div><h4>'+esc(i.nombre)+'</h4><p>'+esc(i.porque)+'</p><div class="reason">💡 '+esc(reason(i))+'</div><div class="card-footer"><span class="price">'+price+'</span></div>';const footer=article.querySelector('.card-footer');if(sePuedeComprar(i)){const b=document.createElement('button');b.className='buy';b.textContent='Comprar aquí';b.onclick=()=>abrirCheckout(i);footer.append(b)}else if(i.tipo!=='tiempo'){const a=document.createElement('a');a.className='buy';a.href=enlaceCompra(i,r.pais);a.target='_blank';a.rel='noopener';a.textContent=textoCompra(i,r.pais);footer.append(a)}return article}
-function reason(i){if(i._score>=10)return'La hemos conectado con varias señales de tu descripción.';if(i.categorias&&i.categorias.includes('con-historia'))return'Convierte la historia entre ustedes en parte del regalo.';if(i.categorias&&i.categorias.includes('lo-tiene-todo'))return'Evita otro objeto genérico y aprovecha mejor el contexto.';return'Encaja con intereses o situaciones que aparecen en tu descripción.'}
-function currency(v,c){if(c==='USD')return'$'+v;if(c==='EUR')return'€'+v;if(c==='GBP')return'£'+Math.round(v*.86);return v+' '+c}
-function esc(s){return String(s).replace(/[&<>\"]/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','\\':'&#92;','"':'&quot;'})[c]})}
-function renderResults(){}
+const $ = id => document.getElementById(id);
+const REGION_KEY = 'acierto.region';
+let region = read(REGION_KEY);
+let tasas = null;
+let currentIdeas = [];
+let activeFilter = 'all';
+let lastIdeaId = null;
+
+const INTERESTS = {
+  cocina:['cocina','cocinar','chef','receta','gastronom','hornear','repost'],
+  cafe:['café','cafe','barista','espresso'],
+  bebidas:['vino','cerveza','whisky','ron','gin','coctel','cocktail'],
+  deporte:['fútbol','futbol','tenis','golf','correr','deporte','ciclismo','escalada','yoga','fitness','padel','surf'],
+  naturaleza:['montaña','senderismo','naturaleza','campo','jardín','jardin','aire libre','camping','pesca'],
+  viajes:['viaja','viajes','viajar','avión','avion','turismo','hotel','mochila'],
+  lectura:['libro','leer','lectura','novela','poesia'],
+  musica:['música','musica','concierto','guitarra','banda','piano','vinilo'],
+  cine:['cine','película','pelicula','series','netflix','filme'],
+  juegos:['juego de mesa','juegos','ajedrez','cartas'],
+  videojuegos:['videojuego','gaming','playstation','xbox','nintendo','steam'],
+  tecnologia:['tecnología','tecnologia','programador','programación','informatica','informática','computación','ordenador','pc','software','electronica'],
+  plantas:['plantas','jardín','jardin','botánica','botanica','huerto'],
+  manualidades:['arte','pinta','dibuj','cerámica','ceramica','manualidad','coser','madera','bricolaje'],
+  bienestar:['spa','relaj','bienestar','cuidado','autocuidado','meditacion','meditación'],
+  mascotas:['perro','gato','mascota','caballo'],
+  moda:['moda','ropa','zapatos','sneaker','accesorios'],
+  foto:['fotografía','fotografia','cámara','camara'],
+};
+
+const REL = {
+  pareja:['pareja','novio','novia','espos','esposa','marido','mujer','compañer'],
+  familia:['madre','mamá','mama','padre','papá','papa','suegra','suegro','hermano','hermana','abuelo','abuela','hijo','hija','familia','tio','tía','tia','primo','prima'],
+  amistad:['amigo','amiga','mejor amigo','mejor amiga'],
+  trabajo:['jefe','jefa','compañero','compañera','colega','profesor','profesora','cliente'],
+};
+
+const OCC = {
+  graduacion:['graduación','graduacion','grado','se gradúa','se gradua','doctorado','tesis','master','máster'],
+  cumpleanos:['cumpleaños','cumple','aniversario de nacimiento'],
+  aniversario:['aniversario'],
+  navidad:['navidad','reyes','nochebuena'],
+  jubilacion:['jubilación','jubilacion','retira','retiro'],
+  nuevoTrabajo:['nuevo trabajo','nuevo puesto','ascenso','promoción','promocion','primer día'],
+  mudanza:['mudanza','casa nueva','piso nuevo'],
+  nacimiento:['bebé','bebe','nacimiento','embarazo'],
+};
+
+const PROFESSIONS = {
+  ciencia:['científica','cientifico','científico','laboratorio','investigador','investigadora','bióloga','biologa','química','quimica','física','fisica'],
+  tecnologia:['programador','programadora','desarrollador','desarrolladora','ingeniero de software','informático','informatica','developer','tech'],
+  aviacion:['piloto','aviación','aviacion','aeropuerto','vuelo','azafata','tripulante'],
+  cocina:['chef','cocinero','cocinera','pastelero','pastelera'],
+  medicina:['médico','medica','médica','enfermero','enfermera','dentista','farmacéutico','farmaceutica'],
+  educacion:['profesor','profesora','maestro','maestra','docente'],
+  arte:['artista','diseñador','diseñadora','fotógrafo','fotografa','fotografo'],
+  oficio:['electricista','carpintero','carpintera','mecánico','mecanico','fontanero','herrero','artesano'],
+};
+
+const PERSONALITY = {
+  practico:['práctico','practica','práctica','util','útil','funcional','no quiere adornos'],
+  minimalista:['minimalista','sencillo','sencilla','simple','no acumula'],
+  curioso:['curioso','curiosa','aprender','experimentos','investigar'],
+  aventurero:['aventurero','aventurera','aventura','arriesgado','explorar'],
+  sentimental:['sentimental','emocional','recuerdo','recuerdos','nostalgia','historia juntos'],
+  creativo:['creativo','creativa','original','inventar','crear','manualidades'],
+  foodie:['gourmet','foodie','comida','ingredientes'],
+};
+
+const SPECIAL = {
+  todo:['no necesita nada','tiene de todo','ya tiene todo','tiene casi todo','difícil de regalar','dificil de regalar','es imposible regalarle','no quiere cosas','no necesita regalos'],
+  personal:['personal','personalizado','hecho para','con su nombre','con nuestros recuerdos','sentimental','emocional'],
+  unusual:['sorpresa','original','único','unico','raro','diferente','poco común','poco comun','inusual'],
+  experience:['experiencia','plan','salida','viaje','concierto','entrada','reservar'],
+};
+
+function read(k){try{return JSON.parse(localStorage.getItem(k))}catch{return null}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
+
+function init(){
+  setupRegion();
+  setupExamples();
+  setupSurprise();
+  $('encontrar').onclick = run;
+  $('persona').addEventListener('keydown', e => {
+    if((e.ctrlKey || e.metaKey) && e.key === 'Enter') run();
+  });
+  $('editar').onclick = () => {
+    $('resultados-section').style.display = 'none';
+    $('persona').focus();
+    window.scrollTo({top:0,behavior:'smooth'});
+  };
+  iniciarCheckout(() => ({...regionActual(),tasas})).then(() => {});
+}
+
+function setupExamples(){
+  document.querySelectorAll('.example2').forEach(b => b.onclick = () => {
+    const key = b.textContent.replace(/^\S+\s/,'').trim();
+    const map = {
+      'Científica que se gradúa':'Mi amiga es científica, trabaja en un laboratorio y acaba de terminar su doctorado. Le gusta la astronomía, es curiosa y ya tiene muchísimas cosas relacionadas con su trabajo.',
+      'Piloto que ya tiene de todo':'Mi hermano es piloto comercial, viaja mucho, tiene casi todo el equipo que necesita y es muy práctico. Le encanta la aviación y también salir a correr.',
+      'Amigo obsesionado con cocinar':'Mi mejor amigo tiene 34 años y está obsesionado con cocinar. Tiene una cocina muy equipada, le encanta probar recetas nuevas y descubrir ingredientes de otros países.',
+      'Pareja a distancia':'Mi pareja vive en otro país. Nos gustan los viajes, la fotografía y tenemos muchos recuerdos juntos. Quiero algo personal que nos haga sentir cerca.',
+      'Alguien difícil de regalar':'Es una persona que siempre dice que no necesita nada. Tiene de todo, es bastante minimalista y prefiere experiencias a acumular objetos.'
+    };
+    $('persona').value = map[key] || '';
+    run();
+  });
+}
+
+function setupSurprise(){
+  $('sorprendeme').onclick = () => showSurprise();
+  $('otra-sorpresa').onclick = () => showSurprise();
+  $('cerrar-sorpresa').onclick = () => $('dialogo-sorpresa').close();
+}
+function showSurprise(){
+  const idea = sorpresa(lastIdeaId);
+  if(!idea) return;
+  lastIdeaId = idea.id;
+  $('idea-sorpresa').innerHTML = '<h3 style="margin:0 0 8px">'+esc(idea.nombre)+'</h3><p style="margin:0;color:var(--suave)">'+esc(idea.porque)+'</p>';
+  $('dialogo-sorpresa').showModal();
+}
+
+function setupRegion(){
+  const p=$('pais'),m=$('moneda');
+  Object.entries(PAISES).forEach(([c,x])=>p.append(new Option(bandera(c)+' '+x.nombre,c)));
+  MONEDAS.forEach(x=>m.append(new Option(x+' · '+nombreMoneda(x),x)));
+  p.onchange=()=>m.value=PAISES[p.value].moneda;
+  $('region').onclick=openRegion;
+  $('form-region').onsubmit=()=>{
+    region={pais:p.value,moneda:m.value};
+    save(REGION_KEY,region);
+    paintRegion();
+  };
+  paintRegion();
+}
+
+function regionActual(){
+  if(region && PAISES[region.pais]) return region;
+  const pais=paisDelIdioma(navigator.languages||[navigator.language]);
+  return {pais,moneda:PAISES[pais].moneda};
+}
+function openRegion(){
+  const r=regionActual();
+  $('pais').value=r.pais;
+  $('moneda').value=r.moneda;
+  $('dialogo-region').showModal();
+}
+function paintRegion(){
+  const r=regionActual();
+  $('region').textContent=bandera(r.pais)+' '+r.moneda;
+}
+
+function normalize(value){
+  return String(value||'').toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9ñü ]/gi,' ')
+    .replace(/\s+/g,' ').trim();
+}
+function hasAny(text, words){
+  const t=normalize(text);
+  return words.some(x=>t.includes(normalize(x)));
+}
+function findGroups(text, groups){
+  return Object.entries(groups).filter(([,words])=>hasAny(text,words)).map(([key])=>key);
+}
+
+function extract(text){
+  const t=normalize(text);
+  const p={
+    interests:findGroups(t,INTERESTS),
+    relations:findGroups(t,REL),
+    occasions:findGroups(t,OCC),
+    professions:findGroups(t,PROFESSIONS),
+    personality:findGroups(t,PERSONALITY),
+    age:null,
+    budget:null,
+    signals:[],
+    avoid:[],
+    custom:false,
+    semantic_tags:[],
+  };
+
+  const age=t.match(/\b(\d{1,3})\s*(?:anos|anos)\b/);
+  if(age) p.age=Number(age[1]);
+
+  const budget=t.match(/(?:menos de|hasta|maximo|max|presupuesto de|presupuesto)\s*(?:€|eur|\$)?\s*(\d{1,5})/);
+  if(budget) p.budget=Number(budget[1]);
+
+  if(hasAny(t,SPECIAL.todo)){p.avoid.push('objetos genéricos');p.signals.push('Evitar otro objeto genérico');p.semantic_tags.push('experiencia','digital');}
+  if(hasAny(t,SPECIAL.personal)){p.custom=true;p.signals.push('El componente personal importa');p.semantic_tags.push('personalizado','recuerdo');}
+  if(hasAny(t,SPECIAL.unusual)){p.signals.push('Busca algo poco común');p.semantic_tags.push('original','sorpresa');}
+  if(hasAny(t,SPECIAL.experience))p.semantic_tags.push('experiencia');
+
+  if(p.personality.includes('practico'))p.signals.push('Valora lo práctico y útil');
+  if(p.personality.includes('minimalista'))p.signals.push('Conviene evitar acumular objetos');
+  if(p.personality.includes('sentimental'))p.signals.push('La historia emocional puede ser parte del regalo');
+  if(p.occasions.includes('graduacion'))p.signals.push('Momento profesional importante');
+  if(p.professions.length)p.signals.push('Su profesión puede orientar una idea específica');
+
+  p.semantic_tags=[...new Set([...p.interests,...p.professions,...p.personality,...p.occasions,...p.semantic_tags])];
+  return p;
+}
+
+function ageBucket(age){
+  if(!age)return null;
+  return age<13?'nino':age<25?'joven':age<60?'adulto':'mayor';
+}
+
+function score(i,p){
+  let s=0;
+  const text=normalize([i.nombre,i.porque,i.tipo,...(i.intereses||[]),...(i.categorias||[]),i.busqueda].join(' '));
+
+  for(const x of p.interests) if((i.intereses||[]).includes(x)) s+=10;
+  for(const x of p.relations) if((i.relaciones||[]).includes(x)) s+=4;
+  for(const x of p.professions) if(text.includes(normalize(x))) s+=6;
+  for(const x of p.personality){
+    if((x==='practico' || x==='minimalista') && ['experiencia','digital','tiempo','consumible'].includes(i.tipo))s+=4;
+    if(x==='sentimental' && i.categorias?.includes('con-historia'))s+=8;
+    if(x==='creativo' && (i.categorias?.includes('con-historia') || i.tipo==='tiempo'))s+=5;
+    if(x==='curioso' && text.includes('aprend'))s+=5;
+  }
+  for(const x of p.occasions){
+    if(x==='graduacion' && (i.categorias?.includes('su-obsesion') || i.categorias?.includes('con-historia')))s+=5;
+    if(x==='cumpleanos' && i.categorias?.includes('con-historia'))s+=4;
+    if(x==='aniversario' && i.categorias?.includes('con-historia'))s+=7;
+    if(x==='jubilacion' && i.tipo==='experiencia')s+=5;
+    if(x==='nuevoTrabajo' && (i.tipo==='objeto'||i.tipo==='experiencia'))s+=3;
+  }
+  if(p.age){
+    const b=ageBucket(p.age);
+    if(!i.edades || i.edades.includes(b))s+=3; else s-=7;
+  }
+  if(p.budget){
+    const min=i.precio?.[0]??0;
+    if(min<=p.budget)s+=3; else s-=5;
+  }
+  if(p.avoid.length){
+    if(['experiencia','digital','tiempo','consumible'].includes(i.tipo))s+=7;
+    if(i.categorias?.includes('lo-tiene-todo'))s+=6;
+  }
+  if(p.custom && i.categorias?.includes('con-historia'))s+=8;
+  if(p.semantic_tags.some(x=>text.includes(normalize(x))))s+=2;
+
+  return s;
+}
+
+function analyze(text){
+  const p=extract(text);
+  currentIdeas=IDEAS.map(i=>Object.assign({},i,{_score:score(i,p)}))
+    .sort((a,b)=>b._score-a._score || a.precio[0]-b.precio[0]);
+  return p;
+}
+
+async function run(){
+  const text=$('persona').value.trim();
+  if(text.length<12){$('persona').focus();return;}
+  const button=$('encontrar');
+  button.disabled=true;
+  button.textContent='✨ Buscando coincidencias…';
+  $('resultados-section').style.display='block';
+  $('summary').textContent='Estamos cruzando intereses, relación, ocasión, personalidad y contexto.';
+  $('signals').replaceChildren();
+  $('resultados').innerHTML='<div class="vacio">🔎 Buscando las mejores coincidencias…</div>';
+  $('resultados-section').scrollIntoView({behavior:'smooth',block:'start'});
+  try{
+    const profile=analyze(text);
+    renderProfile(profile);
+  }finally{
+    button.disabled=false;
+    button.textContent='✨ Encontrar regalos';
+  }
+}
+
+function renderProfile(p){
+  const bits=[];
+  if(p.age)bits.push('tiene '+p.age+' años');
+  if(p.relations.length)bits.push('es '+p.relations[0]);
+  if(p.professions.length)bits.push(p.professions[0]);
+  if(p.interests.length)bits.push('le interesa '+p.interests.slice(0,3).join(', '));
+  $('summary').textContent=p.signals.length
+    ? p.signals.slice(0,2).join('. ')+'. Hemos usado ese contexto para ordenar las ideas.'
+    : ('Por lo que cuentas, '+(bits.join(', ')||'hay varias señales interesantes')+'. Hemos usado ese contexto para ordenar las ideas.');
+
+  const s=$('signals');
+  s.replaceChildren();
+  const items=[];
+  if(p.age)items.push('🎂 '+p.age+' años');
+  if(p.relations.length)items.push('👥 '+p.relations[0]);
+  p.professions.slice(0,2).forEach(x=>items.push('💼 '+x));
+  p.interests.slice(0,4).forEach(x=>items.push('♡ '+labelInterest(x)));
+  p.occasions.slice(0,1).forEach(x=>items.push('📅 '+labelOccasion(x)));
+  p.personality.slice(0,2).forEach(x=>items.push('✦ '+labelPersonality(x)));
+  if(p.budget)items.push('€ ≤ '+p.budget);
+  p.signals.slice(0,2).forEach(x=>items.push('• '+x));
+  items.slice(0,8).forEach(x=>{
+    const b=document.createElement('span');
+    b.className='signal2';
+    b.textContent=x;
+    s.append(b);
+  });
+  activeFilter='all';
+  renderFilters();
+  renderCards();
+}
+
+function labelInterest(i){
+  return {cocina:'cocina',cafe:'café',bebidas:'bebidas',deporte:'deporte',naturaleza:'naturaleza',viajes:'viajes',lectura:'lectura',musica:'música',cine:'cine',juegos:'juegos',videojuegos:'videojuegos',tecnologia:'tecnología',plantas:'plantas',manualidades:'arte',bienestar:'bienestar',mascotas:'mascotas',moda:'moda',foto:'fotografía'}[i]||i;
+}
+function labelOccasion(i){
+  return {graduacion:'graduación',cumpleanos:'cumpleaños',aniversario:'aniversario',navidad:'Navidad',jubilacion:'jubilación',nuevoTrabajo:'nuevo trabajo',mudanza:'mudanza',nacimiento:'nacimiento'}[i]||i;
+}
+function labelPersonality(i){
+  return {practico:'práctico',minimalista:'minimalista',curioso:'curioso',aventurero:'aventurero',sentimental:'sentimental',creativo:'creativo',foodie:'foodie'}[i]||i;
+}
+
+function renderFilters(){
+  const f=$('filters');
+  f.replaceChildren();
+  [['all','Todo'],['personal','❤️ Más personales'],['experience','🎟️ Experiencias'],['unusual','✨ Poco comunes'],['fast','⚡ Para hoy']].forEach(([id,label])=>{
+    const b=document.createElement('button');
+    b.className='filter2'+(activeFilter===id?' active':'');
+    b.textContent=label;
+    b.setAttribute('aria-pressed',activeFilter===id?'true':'false');
+    b.onclick=()=>{activeFilter=id;renderFilters();renderCards();};
+    f.append(b);
+  });
+}
+
+function filtered(){
+  return currentIdeas.filter(i=>{
+    if(activeFilter==='personal')return i.categorias?.includes('con-historia')||i.tipo==='tiempo';
+    if(activeFilter==='experience')return i.tipo==='experiencia';
+    if(activeFilter==='unusual')return i.categorias?.includes('su-obsesion')||i.categorias?.includes('lo-tiene-todo');
+    if(activeFilter==='fast')return i.plazo==='hoy';
+    return true;
+  }).slice(0,12);
+}
+
+function renderCards(){
+  const out=$('resultados');
+  out.replaceChildren();
+  const list=filtered();
+  const groups=[['🎯 Aciertos principales',list.slice(0,3)],['✨ Otras ideas que encajan',list.slice(3,8)]];
+  groups.forEach(g=>{
+    if(!g[1].length)return;
+    const sec=document.createElement('section');
+    sec.innerHTML='<div class="section-title2"><h3>'+g[0]+'</h3><span>'+g[1].length+' ideas seleccionadas</span></div><div class="cards2"></div>';
+    const cards=sec.querySelector('.cards2');
+    g[1].forEach((idea,idx)=>cards.append(card(idea,idx===0)));
+    out.append(sec);
+  });
+  if(!list.length)out.innerHTML='<div class="vacio">No encontramos una combinación clara con ese filtro. Prueba con “Todo”.</div>';
+}
+
+function card(i,featured){
+  const r=regionActual();
+  const article=document.createElement('article');
+  article.className='card2'+(featured?' featured':'');
+  const type={objeto:'🎁 Objeto',consumible:'🍯 Consumible',experiencia:'🎟️ Experiencia',digital:'📲 Digital',tiempo:'💛 Hecho por ti'}[i.tipo]||'🎁 Regalo';
+  const price=i.precio&&i.precio[0]===0?'Gratis / hecho por ti':currency(i.precio?.[0]||0,r.moneda)+' – '+currency(i.precio?.[1]||0,r.moneda);
+  article.innerHTML='<div class="cardtop2"><span>'+type+'</span><span class="match2">'+(i._score>=12?'Encaja especialmente bien':'Puede encajar')+'</span></div><h4>'+esc(i.nombre)+'</h4><p>'+esc(i.porque)+'</p><div class="reason2">💡 '+esc(reason(i))+'</div><div class="cardfooter2"><span class="price2">'+price+'</span></div>';
+  const footer=article.querySelector('.cardfooter2');
+  if(sePuedeComprar(i)){
+    const b=document.createElement('button');
+    b.className='buy2';
+    b.textContent='Comprar aquí';
+    b.onclick=()=>abrirCheckout(i);
+    footer.append(b);
+  }else if(i.tipo!=='tiempo'){
+    const a=document.createElement('a');
+    a.className='buy2';
+    a.href=enlaceCompra(i,r.pais);
+    a.target='_blank';
+    a.rel='noopener';
+    a.textContent=textoCompra(i,r.pais);
+    footer.append(a);
+  }
+  return article;
+}
+
+function reason(i){
+  if(i._score>=16)return'Conecta con varias señales de lo que nos has contado.';
+  if(i.categorias?.includes('con-historia'))return'Puede convertir vuestra historia en parte del regalo.';
+  if(i.categorias?.includes('lo-tiene-todo'))return'Evita otro objeto genérico y aprovecha mejor el contexto.';
+  if(i.tipo==='experiencia')return'Puede regalar un momento en lugar de otra cosa que guardar.';
+  if(i.tipo==='tiempo')return'La personalización puede hacer que una idea sencilla sea irrepetible.';
+  return'Encaja con intereses o situaciones presentes en la descripción.';
+}
+
+function currency(v,c){
+  if(c==='USD')return '$'+v;
+  if(c==='EUR')return '€'+v;
+  if(c==='GBP')return '£'+Math.round(v*.86);
+  return v+' '+c;
+}
+function esc(s){
+  return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+
 init();
