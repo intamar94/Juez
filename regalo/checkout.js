@@ -46,8 +46,10 @@ export async function iniciarCheckout(ctx) {
   return true;
 }
 
-export function sePuedeComprar(idea) {
-  return Boolean(ajustes?.comprables.includes(idea.id));
+export function sePuedeComprar(idea, pais = null) {
+  if (!ajustes?.comprables.includes(idea.id)) return false;
+  if (pais && Array.isArray(ajustes.paisesEnvio) && !ajustes.paisesEnvio.includes(pais)) return false;
+  return true;
 }
 
 export function abrirCheckout(idea) {
@@ -72,7 +74,7 @@ async function enviarDatos(e) {
   e.preventDefault();
   limpiarErrores();
   const comprador = Object.fromEntries(new FormData($('co-form')));
-  comprador.country = 'US';
+  comprador.country = contexto?.()?.pais ?? 'US';
   const boton = $('co-continuar');
   boton.disabled = true;
   try {
