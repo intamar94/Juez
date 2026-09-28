@@ -8,16 +8,38 @@
 const n = (aliases = [], related = {}, opportunities = []) => ({ aliases, related, opportunities });
 
 export const INTERESTS = {
-  cocina:'🍳 Cocina', cafe:'☕ Café y té', bebidas:'🍷 Bebidas', deporte:'🏃 Deporte',
-  naturaleza:'🥾 Naturaleza y aire libre', viajes:'✈️ Viajes', lectura:'📚 Lectura',
-  musica:'🎧 Música', cine:'🎬 Cine y series', juegos:'🎲 Juegos de mesa',
-  videojuegos:'🎮 Videojuegos', tecnologia:'💻 Tecnología', plantas:'🌱 Plantas y jardín',
-  manualidades:'🎨 Arte y manualidades', bienestar:'🧖 Bienestar', mascotas:'🐶 Mascotas',
-  moda:'👟 Moda', foto:'📷 Fotografía', historia:'🏛️ Historia', ciencia:'🔬 Ciencia',
-  coches:'🚗 Motor', aviacion:'✈️ Aviación', bricolaje:'🛠️ Bricolaje', pesca:'🎣 Pesca',
-  astronomia:'🔭 Astronomía', idiomas:'🗣️ Idiomas', baile:'💃 Baile', coleccionismo:'🗃️ Coleccionismo',
-  escritura:'✍️ Escritura', familia:'👨‍👩‍👧 Familia', juegosReto:'🧩 Retos y acertijos',
-  sostenibilidad:'🌍 Sostenibilidad'
+  cocina:['cocina','cocinar','chef','receta','gastronomía','gastronomia','hornear','repostería','reposteria'],
+  cafe:['café','cafe','barista','espresso','tostado'],
+  bebidas:['vino','cerveza','whisky','ron','gin','coctel','cocktail','sommelier'],
+  deporte:['fútbol','futbol','tenis','golf','correr','deporte','ciclismo','escalada','yoga','fitness','padel','surf','ski','esquí'],
+  naturaleza:['montaña','montana','senderismo','naturaleza','campo','jardín','jardin','aire libre','camping','bosque','pesca'],
+  viajes:['viaja','viajes','viajar','avión','avion','turismo','hotel','mochila','ruta','escapada'],
+  lectura:['libro','leer','lectura','novela','poesía','poesia','cómic','comic','ensayo'],
+  musica:['música','musica','concierto','guitarra','banda','piano','vinilo','cantante','instrumento'],
+  cine:['cine','película','pelicula','series','netflix','filme'],
+  juegos:['juego de mesa','juegos','ajedrez','cartas','puzzle','puzle','trivia'],
+  videojuegos:['videojuego','gaming','playstation','xbox','nintendo','steam','gamer'],
+  tecnologia:['tecnología','tecnologia','programador','programación','programacion','informatica','informática','computación','computacion','ordenador','pc','software','electrónica','electronica','gadget'],
+  plantas:['plantas','jardín','jardin','botánica','botanica','huerto','cultivar'],
+  manualidades:['arte','pinta','pintar','dibuj','cerámica','ceramica','manualidad','coser','bordar','tejer','crochet','madera','bricolaje'],
+  bienestar:['spa','relaj','bienestar','cuidado','autocuidado','meditación','meditacion','yoga','calma'],
+  mascotas:['perro','gato','mascota','caballo','animales'],
+  moda:['moda','ropa','zapatos','sneaker','accesorios'],
+  foto:['fotografía','fotografia','cámara','camara','foto'],
+  historia:['historia','histórico','historico','civilización','civilizacion'],
+  ciencia:['ciencia','científico','cientifica','laboratorio','experimento'],
+  coches:['coche','coches','auto','automóvil','automovil','motor'],
+  aviacion:['piloto','aviación','aviacion','avión','avion','aeropuerto','vuelo'],
+  bricolaje:['bricolaje','diy','reparar','arreglar','construir'],
+  pesca:['pesca','pescar','pescador','caña','anzuelo'],
+  astronomia:['astronomía','astronomia','estrellas','universo','cosmos','telescopio'],
+  idiomas:['idiomas','alemán','aleman','inglés','ingles','español','espanol','francés','frances','italiano','portugués','portugues'],
+  baile:['baile','bailar','danza','salsa','bachata','tango'],
+  coleccionismo:['coleccionismo','coleccionista','colecciona','sellos','monedas','figuras'],
+  escritura:['escribir','escritura','autor','poeta','poesía','poesia','novela','cuento','guion','guión'],
+  familia:['familia','madre','padre','abuelo','abuela','hijos'],
+  juegosReto:['acertijos','puzles','puzzles','rompecabezas','trivia','enigmas'],
+  sostenibilidad:['sostenibilidad','sostenible','ecología','ecologia','reciclaje','cero residuos','zero waste']
 };
 
 export const REL = {
@@ -359,6 +381,39 @@ export const CONCEPTS = {
   },['naturaleza','experiencia','viaje','libro'])
 };
 
+// Conceptos puente reutilizables: conectan señales específicas con oportunidades generales.
+Object.assign(CONCEPTS, {
+  tecnico:n(['técnico','tecnico','preciso','precisa','ingenioso','ingeniosa'],{tecnologia:.60, herramientas:.65, proyectos:.60},['tecnologia','herramienta','proyecto']),
+  matematica:n(['matemática','matematica','matemáticas','matematicas','números','numeros'],{logica:.86, ciencia:.55, datos:.62},['libro','curso','puzzle']),
+  precision:n(['precisión','precision','exactitud','meticuloso','meticulosa'],{tecnico:.72, perfeccionista:.60},['herramienta','objeto_util','curso']),
+  puzzles:n(['puzzle','puzle','rompecabezas','acertijo','acertijos','enigmas'],{logica:.82, juegos:.74},['puzzle','juego','experiencia']),
+  geometria:n(['geometría','geometria','formas','espacio','volúmenes','volumenes'],{arquitectura:.42, matematica:.65, diseno:.50},['libro','puzzle','curso']),
+  ciudad:n(['ciudad','urbano','urbana','urbanismo'],{arquitectura:.74, viajes:.40, patrimonio:.45},['mapa','experiencia','libro']),
+  proyectos:n(['proyecto','proyectos','prototipo','prototipos','hacer algo'],{tecnologia:.42, bricolaje:.55, creatividad:.55},['proyecto','kit','curso','herramienta']),
+  herramientas:n(['herramienta','herramientas','destornillador','taladro','llave','instrumentos de trabajo'],{bricolaje:.76, mecanica:.72, carpinteria:.70},['herramienta','objeto_util','taller']),
+  hogar:n(['hogar','casa','piso','salón','salon','habitación','habitacion'],{familia:.42, bienestar:.35, jardines:.35},['hogar','objeto_util','personalizado']),
+  materiales:n(['material','materiales','papel','arcilla','madera','tela','pintura'],{manualidades:.72, artesania:.70, arte:.60},['material','taller','personalizado']),
+  creatividad:n(['creatividad','creativo','creativa','crear','inventar'],{arte:.60, escritura:.60, diseno:.64, manualidades:.58},['personalizado','taller','curso']),
+  noche:n(['noche','nocturno','nocturna','cielo nocturno'],{astronomia:.70, naturaleza:.28},['astronomia','experiencia']),
+  cuidado:n(['cuidado','cuidar','atender','ayudar'],{bienestar:.52, mascotas:.42, familia:.42},['bienestar','personalizado','experiencia']),
+  animales:n(['animales','fauna','perros','gatos','caballos','aves'],{zoologia:.68, mascotas:.84, naturaleza:.62},['mascota','naturaleza','experiencia','personalizado']),
+  logica:n(['lógica','logica','razonamiento','deducción','deduccion'],{matematicas:.70, puzzles:.82, juegos:.58},['puzzle','juego','libro']),
+  outdoors:n(['aire libre','outdoor','outdoors','exterior'],{naturaleza:.82, aventura:.58, deporte:.45},['naturaleza','experiencia','viaje','objeto_util']),
+  curiosidad:n(['curiosidad','curioso','curiosa','descubrir','preguntar'],{investigacion:.70, ciencia:.65, aventura:.42},['libro','curso','experiencia']),
+  familia:n(['familia','padres','madre','padre','abuelo','abuela','hijos','hermanos'],{memoria:.66, social:.45},['familia','personalizado','experiencia']),
+  consumo:n(['consumo','compras','comprar menos','consumo responsable'],{sostenibilidad:.66, minimalista:.50},['sostenible','consumible','experiencia']),
+  trabajoSocial:n(['trabajo social','trabajador social','trabajadora social','comunidad'],{sociedad:.72, social:.60},['experiencia','grupo','personalizado']),
+  estetica:n(['estética','estetica','bonito','bonita','elegante','bello','bella'],{arte:.58, diseno:.62, moda:.46},['diseño','personalizado','objeto']),
+  memoria:n(['memoria','recuerdo','recuerdos','nostalgia','historia juntos'],{fotografia:.52, historia:.46, sentimental:.50},['memoria','foto','personalizado']),
+  personalizado:n(['personalizado','personalizar','con su nombre','hecho para él','hecho para ella'],{memoria:.62, creatividad:.55},['personalizado','objeto_unico']),
+  grupo:n(['grupo','amigos','familia','entre todos','para dos'],{social:.62, familia:.42},['grupo','experiencia']),
+  suscripcion:n(['suscripción','suscripcion','mensual','cada mes'],{consumo:.40, digital:.62},['suscripcion','digital','consumible']),
+  gratis:n(['gratis','sin gastar','cero euros','0 euros'],{},['tiempo','digital','personalizado']),
+  tiempo:n(['tiempo','tiempo juntos','día libre','dia libre'],{experiencia:.58, memoria:.44},['tiempo','experiencia','personalizado']),
+  digital:n(['digital','online','en línea','en linea','app','suscripción','suscripcion'],{tecnologia:.52, programacion:.30},['digital','curso','suscripcion'])
+});
+
+
 export const OPPORTUNITY_TERMS = {
   experiencia:['experiencia','taller','entradas','escape room','spa','degustación','degustacion','escapada','actividad','clase'],
   libro:['libro','lector','audiolibro','lectura','autor'],
@@ -401,6 +456,10 @@ export function normalizeLocal(value){
 function matchAlias(text, alias){
   const a=normalizeLocal(alias);
   if(!a)return false;
+  if(a.length<=3){
+    const padded=' '+text+' ';
+    return padded.includes(' '+a+' ');
+  }
   return text===a || text.includes(a);
 }
 
