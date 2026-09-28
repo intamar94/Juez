@@ -2,8 +2,9 @@
 //
 // Cada idea es un TIPO de regalo, no un producto concreto: así no caduca, no depende de una
 // tienda y el usuario busca la versión que mejor le encaje. Campos:
-//   precio     [mín, máx] en euros para una versión decente
-//   plazo      'hoy' (digital, experiencia o tienda de barrio), 'dias' (envío 24–72 h),
+//   precio     [mín, máx] de referencia (en dólares) para una versión decente; la web solo
+//              muestra el nivel ($, $$, $$$) porque cada país tiene su moneda
+//   plazo      'hoy' (digital, experiencia o tienda cercana), 'dias' (envío 24–72 h),
 //              'semana' (personalizado o hecho a mano)
 //   tipo       'objeto' | 'consumible' | 'experiencia' | 'digital' | 'tiempo'
 //   intereses  aficiones con las que encaja; vacío = encaja con cualquiera
@@ -42,8 +43,8 @@ export const CATEGORIAS = [
   },
   {
     id: 'ultima-hora', emoji: '🚨', color: 'rojo',
-    nombre: 'Me pilló el toro',
-    lema: 'Lo tienes hoy o mañana y nadie notará que fue a última hora.',
+    nombre: 'Salvavidas de último minuto',
+    lema: 'Lo tienes hoy mismo y nadie notará que fue a última hora.',
   },
   {
     id: 'mejora-diaria', emoji: '✨', color: 'ambar',
@@ -52,37 +53,37 @@ export const CATEGORIAS = [
   },
   {
     id: 'experiencias', emoji: '🎟️', color: 'azul',
-    nombre: 'Cero trastos, mil planes',
+    nombre: 'Menos cosas, más planes',
     lema: 'Un recuerdo compartido dura más que cualquier objeto.',
   },
   {
     id: 'con-historia', emoji: '🥹', color: 'rosa',
     nombre: 'Lagrimita garantizada',
-    lema: 'Fotos, cartas y recuerdos vuestros.',
+    lema: 'Fotos, cartas y recuerdos compartidos.',
   },
   {
     id: 'su-obsesion', emoji: '🤓', color: 'naranja',
-    nombre: 'Friki nivel experto',
+    nombre: 'Fan nivel experto',
     lema: 'Tiene una afición y quieres estar a la altura.',
   },
   {
     id: 'poco-dinero', emoji: '🪙', color: 'verde',
-    nombre: 'Quedar bien por menos de 20 €',
+    nombre: 'Quedar bien gastando poco',
     lema: 'Detalles baratos que se nota que están pensados.',
   },
   {
     id: 'en-grupo', emoji: '🐷', color: 'turquesa',
-    nombre: 'Hacemos bote',
-    lema: 'Juntáis el dinero y os lucís con algo grande.',
+    nombre: 'Entre todos',
+    lema: 'Juntan el dinero y se lucen con algo grande.',
   },
   {
     id: 'compromiso', emoji: '🕵️', color: 'gris',
-    nombre: 'Amigo invisible',
-    lema: 'Compañeros, cuñados y casi desconocidos, sin riesgo.',
+    nombre: 'Amigo secreto',
+    lema: 'Colegas, parientes lejanos y casi desconocidos, sin riesgo.',
   },
   {
     id: 'peques', emoji: '🧸', color: 'cielo',
-    nombre: 'Modo peque',
+    nombre: 'Modo niños',
     lema: 'Para niños y niñas que ya tienen demasiados juguetes.',
   },
 ];
@@ -91,11 +92,11 @@ export const IDEAS = [
   // — Lo tiene todo / consumibles —
   {
     id: 'cesta-producto-local',
-    nombre: 'Lote de productos locales buenos',
+    nombre: 'Canasta de productos locales buenos',
     porque: 'Se come y desaparece: no ocupa sitio y casi nadie se compra el aceite o el queso caro para sí.',
     precio: [25, 70], plazo: 'dias', tipo: 'consumible',
     intereses: ['cocina', 'bebidas'], categorias: ['lo-tiene-todo', 'compromiso'],
-    busqueda: 'lote gourmet productos locales',
+    busqueda: 'canasta gourmet productos locales',
   },
   {
     id: 'cafe-especialidad',
@@ -106,7 +107,7 @@ export const IDEAS = [
     busqueda: 'suscripción café de especialidad',
   },
   {
-    id: 'te-cata',
+    id: 'caja-tes',
     nombre: 'Caja de tés para probar',
     porque: 'Variedad en poco espacio; ideal si ya tiene su té favorito y le gusta curiosear.',
     precio: [15, 35], plazo: 'dias', tipo: 'consumible',
@@ -114,7 +115,7 @@ export const IDEAS = [
     busqueda: 'caja degustación tés',
   },
   {
-    id: 'vino-cata',
+    id: 'vino-nota',
     nombre: 'Botella especial con una nota tuya',
     porque: 'La botella se bebe; la nota (“para abrir cuando…”) es lo que se recuerda.',
     precio: [15, 50], plazo: 'hoy', tipo: 'consumible',
@@ -132,7 +133,7 @@ export const IDEAS = [
   {
     id: 'cosmetica-buena',
     nombre: 'Jabón, crema o aceite de los buenos',
-    porque: 'Convierte un gesto diario en un pequeño lujo y se gasta: cero trastos.',
+    porque: 'Convierte un gesto diario en un pequeño lujo y se gasta: no se acumula.',
     precio: [15, 45], plazo: 'hoy', tipo: 'consumible',
     intereses: ['bienestar'], categorias: ['lo-tiene-todo', 'mejora-diaria', 'compromiso'],
     busqueda: 'jabón artesanal crema natural regalo',
@@ -184,7 +185,7 @@ export const IDEAS = [
   {
     id: 'auriculares',
     nombre: 'Auriculares con cancelación de ruido',
-    porque: 'Cambian el transporte, la oficina y los viajes. Mejor si lo juntáis entre varios.',
+    porque: 'Cambian el transporte, la oficina y los viajes. Mejor si se juntan varios para comprarlos.',
     precio: [80, 350], plazo: 'dias', tipo: 'objeto',
     intereses: ['musica', 'viajes', 'tecnologia'], edades: ['joven', 'adulto'],
     categorias: ['mejora-diaria', 'en-grupo'],
@@ -201,12 +202,12 @@ export const IDEAS = [
   },
   {
     id: 'bateria-externa',
-    nombre: 'Batería externa pequeña y rápida',
+    nombre: 'Cargador portátil pequeño y rápido',
     porque: 'Útil para todo el mundo y difícil de fallar: siempre se acaba usando.',
     precio: [20, 50], plazo: 'hoy', tipo: 'objeto',
     intereses: ['tecnologia', 'viajes'], edades: ['joven', 'adulto'],
     categorias: ['compromiso', 'ultima-hora'],
-    busqueda: 'batería externa carga rápida',
+    busqueda: 'power bank carga rápida',
   },
   {
     id: 'manta-buena',
@@ -223,7 +224,7 @@ export const IDEAS = [
     precio: [40, 120], plazo: 'dias', tipo: 'objeto',
     intereses: ['viajes', 'moda', 'tecnologia'], edades: ['joven', 'adulto'],
     categorias: ['mejora-diaria', 'en-grupo'],
-    busqueda: 'mochila diaria resistente portátil',
+    busqueda: 'mochila resistente para laptop',
   },
 
   // — Experiencias —
@@ -254,13 +255,13 @@ export const IDEAS = [
     busqueda: 'taller cerámica iniciación',
   },
   {
-    id: 'cata-vinos',
-    nombre: 'Cata de vinos, cervezas o quesos',
+    id: 'degustacion',
+    nombre: 'Degustación de vinos, cervezas o quesos',
     porque: 'Se aprende, se comparte y no queda nada en un cajón.',
     precio: [25, 70], plazo: 'hoy', tipo: 'experiencia',
     intereses: ['bebidas', 'cocina'], edades: ['adulto', 'mayor'],
     categorias: ['experiencias', 'lo-tiene-todo'],
-    busqueda: 'cata de vinos experiencia',
+    busqueda: 'degustación de vinos experiencia',
   },
   {
     id: 'spa-masaje',
@@ -291,12 +292,12 @@ export const IDEAS = [
   },
   {
     id: 'ruta-guiada',
-    nombre: 'Ruta guiada, kayak o barranquismo',
+    nombre: 'Caminata guiada, kayak o rápel',
     porque: 'Para quien siempre dice “algún día hago eso”: le das la fecha.',
     precio: [30, 90], plazo: 'hoy', tipo: 'experiencia',
     intereses: ['naturaleza', 'deporte', 'viajes'], edades: ['joven', 'adulto'],
     categorias: ['experiencias', 'su-obsesion'],
-    busqueda: 'actividad aventura kayak ruta guiada',
+    busqueda: 'actividad aventura kayak caminata guiada',
   },
   {
     id: 'teatro-cine',
@@ -308,19 +309,19 @@ export const IDEAS = [
   },
   {
     id: 'clase-deporte',
-    nombre: 'Bono de clases (escalada, yoga, pádel…)',
+    nombre: 'Paquete de clases (escalada, yoga, baile…)',
     porque: 'Le empuja a probar lo que tiene pendiente sin tener que pagar la matrícula.',
     precio: [30, 100], plazo: 'hoy', tipo: 'experiencia',
     intereses: ['deporte', 'bienestar'], edades: ['joven', 'adulto'],
     categorias: ['experiencias', 'su-obsesion', 'lo-tiene-todo'],
-    busqueda: 'bono clases escalada yoga',
+    busqueda: 'paquete clases escalada yoga regalo',
   },
 
   // — Con historia —
   {
     id: 'album-fotos',
     nombre: 'Álbum de fotos impreso de un año o un viaje',
-    porque: 'Las fotos viven en el móvil y nadie las mira. Impresas se vuelven a abrir durante años.',
+    porque: 'Las fotos viven en el teléfono y nadie las mira. Impresas se vuelven a abrir durante años.',
     precio: [20, 60], plazo: 'semana', tipo: 'objeto',
     intereses: ['foto', 'viajes'], relaciones: ['pareja', 'familia', 'amistad'],
     categorias: ['con-historia'],
@@ -346,8 +347,8 @@ export const IDEAS = [
   },
   {
     id: 'mapa-estrellas',
-    nombre: 'Lámina del cielo o del mapa de un día vuestro',
-    porque: 'Pone fecha y lugar a un momento importante (dónde os conocisteis, un nacimiento…).',
+    nombre: 'Lámina del cielo o del mapa de un día especial',
+    porque: 'Pone fecha y lugar a un momento importante (el día en que se conocieron, un nacimiento…).',
     precio: [20, 50], plazo: 'semana', tipo: 'objeto',
     intereses: ['viajes', 'manualidades'], relaciones: ['pareja', 'familia'],
     categorias: ['con-historia'],
@@ -363,13 +364,13 @@ export const IDEAS = [
     busqueda: 'montar vídeo sorpresa mensajes',
   },
   {
-    id: 'vale-tiempo',
-    nombre: 'Vales de tiempo (“una cena hecha por mí”, “cuido a los niños”)',
-    porque: 'Para quien anda sin tiempo, liberarle una tarde vale más que cualquier cosa.',
+    id: 'cupones-tiempo',
+    nombre: 'Cupones de tiempo (“una cena hecha por mí”, “cuido a los niños”)',
+    porque: 'Para quien anda sin tiempo, regalarle una tarde libre es lo mejor.',
     precio: [0, 15], plazo: 'hoy', tipo: 'tiempo',
     intereses: [], relaciones: ['pareja', 'familia', 'amistad'],
     categorias: ['con-historia', 'poco-dinero', 'ultima-hora'],
-    busqueda: 'vales regalo imprimibles',
+    busqueda: 'cupones de regalo imprimibles',
   },
 
   // — Su obsesión —
@@ -384,11 +385,11 @@ export const IDEAS = [
   },
   {
     id: 'kit-cultivo',
-    nombre: 'Planta bonita o kit para cultivar setas o hierbas',
+    nombre: 'Planta bonita o kit para cultivar hongos o hierbas',
     porque: 'Algo vivo que cuidar; se ve crecer y recuerda quién lo dio.',
     precio: [15, 40], plazo: 'dias', tipo: 'objeto',
     intereses: ['plantas', 'cocina'], categorias: ['su-obsesion', 'poco-dinero'],
-    busqueda: 'kit cultivo setas hierbas aromáticas',
+    busqueda: 'kit cultivo hongos hierbas aromáticas',
   },
   {
     id: 'material-arte',
@@ -432,7 +433,7 @@ export const IDEAS = [
     precio: [15, 70], plazo: 'hoy', tipo: 'digital',
     intereses: ['videojuegos'], edades: ['nino', 'joven', 'adulto'],
     categorias: ['su-obsesion', 'ultima-hora'],
-    busqueda: 'tarjeta regalo videojuegos',
+    busqueda: 'tarjeta de regalo videojuegos',
   },
   {
     id: 'revelado-foto',
@@ -443,13 +444,13 @@ export const IDEAS = [
     busqueda: 'impresión fotográfica fine art',
   },
   {
-    id: 'zapatillas-cuidado',
-    nombre: 'Kit de limpieza para sus zapatillas',
-    porque: 'Para quien mima sus zapatillas: práctico, barato y muy específico.',
+    id: 'limpieza-calzado',
+    nombre: 'Kit de limpieza para su calzado deportivo',
+    porque: 'Para quien cuida sus sneakers como un tesoro: práctico, barato y muy específico.',
     precio: [15, 30], plazo: 'dias', tipo: 'consumible',
     intereses: ['moda', 'deporte'], edades: ['joven', 'adulto'],
     categorias: ['su-obsesion', 'poco-dinero'],
-    busqueda: 'kit limpieza zapatillas',
+    busqueda: 'kit limpieza sneakers',
   },
 
   // — Digitales y suscripciones —
@@ -460,7 +461,7 @@ export const IDEAS = [
     precio: [15, 60], plazo: 'hoy', tipo: 'digital',
     intereses: ['musica', 'cine'], edades: ['joven', 'adulto', 'mayor'],
     categorias: ['ultima-hora', 'lo-tiene-todo'],
-    busqueda: 'tarjeta regalo suscripción música series',
+    busqueda: 'tarjeta de regalo suscripción música series',
   },
   {
     id: 'curso-online',
@@ -474,7 +475,7 @@ export const IDEAS = [
   {
     id: 'audiolibros',
     nombre: 'Suscripción de audiolibros',
-    porque: 'Para quien quiere leer y no encuentra el rato: se escucha en el coche o paseando.',
+    porque: 'Para quien quiere leer y no encuentra el rato: se escucha manejando o caminando.',
     precio: [10, 60], plazo: 'hoy', tipo: 'digital',
     intereses: ['lectura', 'deporte'], edades: ['joven', 'adulto', 'mayor'],
     categorias: ['ultima-hora', 'lo-tiene-todo'],
@@ -485,7 +486,7 @@ export const IDEAS = [
   {
     id: 'construccion',
     nombre: 'Juego de construcción',
-    porque: 'Juego largo y abierto: vale para muchas edades y se combina con lo que ya tiene.',
+    porque: 'Juego largo y abierto: sirve para muchas edades y se combina con lo que ya tiene.',
     precio: [20, 80], plazo: 'dias', tipo: 'objeto',
     intereses: ['juegos', 'manualidades', 'tecnologia'], edades: ['nino'],
     categorias: ['peques'],
@@ -522,15 +523,15 @@ export const IDEAS = [
   // — Compromiso —
   {
     id: 'tarjeta-local',
-    nombre: 'Tarjeta regalo de una tienda o restaurante que le guste',
+    nombre: 'Tarjeta de regalo de una tienda o restaurante que le guste',
     porque: 'No es frío si eliges tú el sitio: demuestra que sabes a dónde le gusta ir.',
     precio: [20, 80], plazo: 'hoy', tipo: 'digital',
     intereses: [], categorias: ['compromiso', 'ultima-hora', 'en-grupo'],
-    busqueda: 'tarjeta regalo restaurante',
+    busqueda: 'tarjeta de regalo restaurante',
   },
   {
     id: 'chocolate-bueno',
-    nombre: 'Chocolate de calidad o dulces típicos de tu tierra',
+    nombre: 'Chocolate de calidad o dulces típicos de tu región',
     porque: 'Casi nadie dice que no, se comparte en la oficina y no hay que acertar la talla.',
     precio: [8, 25], plazo: 'hoy', tipo: 'consumible',
     intereses: ['cocina', 'cafe'], categorias: ['compromiso', 'poco-dinero', 'ultima-hora'],

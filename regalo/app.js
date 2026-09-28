@@ -1,15 +1,15 @@
 import { CATEGORIAS } from './catalogo.js';
-import { categoria, enlaceCompra, ideasDe, PLAZOS, sorpresa, textoCompra, textoPrecio } from './tienda.js';
+import { categoria, enlaceCompra, ideasDe, NIVELES, PLAZOS, sorpresa, textoCompra, textoNivel } from './tienda.js';
 
 const $ = (id) => document.getElementById(id);
 
-const PRESUPUESTOS = [[null, 'Todo'], [20, 'Hasta 20 €'], [50, 'Hasta 50 €'], [100, 'Hasta 100 €']];
+const FILTROS = [[null, 'Todo'], ...Object.entries(NIVELES).map(([id, n]) => [id, `${n.simbolo} ${n.texto}`])];
 const TIPOS = {
   objeto: '🎁 Regalo', consumible: '🍯 Se disfruta y se acaba', experiencia: '🎟️ Plan',
   digital: '📲 Digital', tiempo: '💛 Hecho por ti',
 };
 
-let presupuesto = null;
+let filtroNivel = null;
 let ultimaSorpresa = null;
 
 function el(etiqueta, props = {}, ...hijos) {
@@ -58,7 +58,7 @@ function mostrar(desplazar) {
   const c = categoriaDelHash();
   $('ideas').hidden = !c;
   if (!c) return;
-  presupuesto = null;
+  filtroNivel = null;
   pintarOtras(c);
   pintarCategoria(c);
   if (desplazar) $('ideas').scrollIntoView();
@@ -88,20 +88,20 @@ function pintarCategoria(c) {
   // En la categoría barata el filtro de precio sobra.
   if (c.id !== 'poco-dinero') {
     const chips = el('div', { className: 'chips' });
-    for (const [valor, texto] of PRESUPUESTOS) {
+    for (const [valor, texto] of FILTROS) {
       const b = el('button', { type: 'button', textContent: texto });
-      b.setAttribute('aria-pressed', String(presupuesto === valor));
-      b.addEventListener('click', () => { presupuesto = valor; pintarCategoria(c); });
+      b.setAttribute('aria-pressed', String(filtroNivel === valor));
+      b.addEventListener('click', () => { filtroNivel = valor; pintarCategoria(c); });
       chips.append(b);
     }
     cabeza.append(chips);
   }
 
   const cont = $('resultados');
-  const ideas = ideasDe(c.id, { presupuesto });
+  const ideas = ideasDe(c.id, { nivel: filtroNivel });
   cont.replaceChildren(...ideas.map(tarjeta));
   if (!ideas.length) {
-    cont.append(el('div', { className: 'vacio', textContent: 'Nada por ese precio aquí. Prueba con un poco más de presupuesto.' }));
+    cont.append(el('div', { className: 'vacio', textContent: 'Nada en este nivel de precio aquí. Prueba con otro.' }));
   }
 }
 
@@ -113,9 +113,9 @@ function tarjeta(idea) {
     ),
     el('h3', { textContent: idea.nombre }),
     el('p', { textContent: idea.porque }),
-    el('span', { className: 'precio', textContent: textoPrecio(idea.precio) }),
+    el('span', { className: 'precio', textContent: textoNivel(idea) }),
     el('a', {
-      className: 'comprar', href: enlaceCompra(idea), target: '_blank', rel: 'noopener sponsored',
+      className: 'comprar', href: enlaceCompra(idea), target: '_blank', rel: 'noopener',
       textContent: `${textoCompra(idea)} →`,
     }),
   );

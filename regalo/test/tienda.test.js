@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { CATEGORIAS, IDEAS, INTERESES } from '../catalogo.js';
-import { enlaceCompra, ideasDe, PLAZOS, sorpresa, TIENDA, textoCompra, textoPrecio } from '../tienda.js';
+import { enlaceCompra, ideasDe, nivel, PLAZOS, sorpresa, textoCompra, textoNivel } from '../tienda.js';
 
 test('el catálogo es coherente', () => {
   const ids = new Set();
@@ -27,7 +27,7 @@ test('cada categoría tiene al menos cuatro ideas', () => {
 });
 
 test('las categorías cumplen lo que prometen', () => {
-  for (const i of ideasDe('poco-dinero')) assert.ok(i.precio[0] <= 20, i.id);
+  for (const i of ideasDe('poco-dinero')) assert.equal(nivel(i), 'bajo', i.id);
   for (const i of ideasDe('ultima-hora')) assert.equal(i.plazo, 'hoy', i.id);
   for (const i of ideasDe('lo-tiene-todo')) assert.notEqual(i.tipo, 'objeto', i.id);
   for (const i of ideasDe('peques')) assert.ok(i.edades?.includes('nino'), i.id);
@@ -41,40 +41,45 @@ test('lo de niños solo aparece en categorías aptas', () => {
   }
 });
 
-test('ideasDe filtra por presupuesto y ordena de barata a cara', () => {
-  const r = ideasDe(null, { presupuesto: 30 });
+test('ideasDe filtra por nivel y ordena de barata a cara', () => {
+  const r = ideasDe(null, { nivel: 'medio' });
   assert.ok(r.length > 0);
-  for (const i of r) assert.ok(i.precio[0] <= 30, i.id);
+  for (const i of r) assert.equal(nivel(i), 'medio', i.id);
   for (let k = 1; k < r.length; k++) assert.ok(r[k - 1].precio[0] <= r[k].precio[0]);
+});
+
+test('cada categoría con filtro tiene algo en cada nivel o casi', () => {
+  for (const c of ['lo-tiene-todo', 'experiencias', 'su-obsesion']) {
+    for (const n of ['bajo', 'medio']) assert.ok(ideasDe(c, { nivel: n }).length > 0, `${c} ${n}`);
+  }
 });
 
 test('el botón lleva a comprar o a reservar según el tipo', () => {
   const termo = IDEAS.find((i) => i.id === 'botella-termo');
-  assert.match(enlaceCompra(termo), /^https:\/\/www\.amazon\.es\/s\?k=termo/);
+  assert.match(enlaceCompra(termo), /tbm=shop&q=termo/);
   assert.equal(textoCompra(termo), 'Comprar');
   const spa = IDEAS.find((i) => i.id === 'spa-masaje');
-  assert.match(enlaceCompra(spa), /google\.com\/search/);
+  assert.ok(!enlaceCompra(spa).includes('tbm=shop'));
   assert.equal(textoCompra(spa), 'Reservar');
 });
 
-test('la etiqueta de afiliado se añade solo si está configurada', () => {
-  const termo = IDEAS.find((i) => i.id === 'botella-termo');
-  assert.ok(!enlaceCompra(termo).includes('tag='));
-  TIENDA.etiquetaAfiliado = 'acierto-21';
-  try {
-    assert.ok(enlaceCompra(termo).endsWith('&tag=acierto-21'));
-  } finally {
-    TIENDA.etiquetaAfiliado = '';
-  }
+test('los textos no usan moneda ni expresiones de un solo país', () => {
+  const textos = JSON.stringify([CATEGORIAS, IDEAS]);
+  assert.ok(!/€|\beuros?\b/i.test(textos), 'moneda');
+  // Límites con \p{L}: \b no reconoce la ñ ni las tildes como letras.
+  const local = /(?<!\p{L})(vosotros|vuestr\p{L}*|os|juntáis|móvil|coche|friki|bote|cuñad\p{L}*|zapatillas|trastos|mola)(?!\p{L})/iu;
+  assert.ok(!local.test(textos), textos.match(local)?.[0]);
+});
+
+test('textoNivel', () => {
+  assert.equal(textoNivel({ precio: [0, 0] }), 'Gratis');
+  assert.equal(textoNivel({ precio: [15, 30] }), '$ · Económico');
+  assert.equal(textoNivel({ precio: [40, 120] }), '$$ · Intermedio');
+  assert.equal(textoNivel({ precio: [90, 300] }), '$$$ · Especial');
 });
 
 test('sorpresa no repite la anterior', () => {
   const a = sorpresa(null, () => 0);
   const b = sorpresa(a.id, () => 0);
   assert.notEqual(a.id, b.id);
-});
-
-test('textoPrecio', () => {
-  assert.equal(textoPrecio([0, 0]), 'Gratis');
-  assert.equal(textoPrecio([15, 30]), '15–30 €');
 });

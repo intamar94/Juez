@@ -4,10 +4,13 @@ Web para encontrar el regalo perfecto en dos clics: eliges una categoría, elige
 botón te lleva a la tienda con la búsqueda hecha. Sin registro y sin preguntas.
 
 Las categorías se organizan por situación y con nombre propio: **Misión imposible** (lo tiene
-todo), **Me pilló el toro** (última hora), **Caprichos que nunca se compraría**, **Cero trastos,
-mil planes**, **Lagrimita garantizada**, **Friki nivel experto**, **Quedar bien por menos de
-20 €**, **Hacemos bote**, **Amigo invisible** y **Modo peque**. Cada una tiene su enlace
+todo), **Salvavidas de último minuto**, **Caprichos que nunca se compraría**, **Menos cosas, más
+planes**, **Lagrimita garantizada**, **Fan nivel experto**, **Quedar bien gastando poco**,
+**Entre todos**, **Amigo secreto** y **Modo niños**. Cada una tiene su enlace
 (`#c/lo-tiene-todo`) para compartirla, y el botón **🎲 Sorpréndeme** da una idea al azar.
+
+Los textos están en español neutro y los precios se muestran por nivel ($ económico,
+$$ intermedio, $$$ especial) en lugar de en una moneda, para que la web sirva en cualquier país.
 
 ```bash
 npm test     # pruebas del catálogo y de los enlaces de compra
@@ -20,10 +23,11 @@ estático (Vercel, Netlify, GitHub Pages).
 | Archivo | Qué hace |
 |---|---|
 | `catalogo.js` | Categorías y las ideas, cada una con su «por qué acierta», precio y plazo |
-| `tienda.js` | A qué tienda lleva cada botón (Amazon para productos, búsqueda para planes) y el código de afiliado |
+| `tienda.js` | Niveles de precio y a dónde lleva cada botón (Google Shopping para productos, búsqueda para planes) |
 | `app.js` / `index.html` | Portada de categorías, vista de cada categoría y «Sorpréndeme» |
 
-Para monetizar, pon tu código de Amazon Afiliados en `TIENDA.etiquetaAfiliado` (`tienda.js`).
+Para vender a través de una tienda concreta o con código de afiliado, cambia `TIENDA.productos` en
+`tienda.js`.
 
 ## Qué existe ya
 
@@ -47,7 +51,7 @@ De los estudios de psicología del regalo y de lo que se repite en foros:
    se gastan, experiencias y «la versión mejor» de lo cotidiano. → «Misión imposible» no
    incluye objetos.
 5. **La prisa manda.** Buena parte de las búsquedas son de última hora. →
-   «Me pilló el toro» solo tiene ideas que se consiguen hoy, y cada tarjeta dice el plazo.
+   «Salvavidas de último minuto» solo tiene ideas que se consiguen hoy, y cada tarjeta dice el plazo.
 6. **Llegar tarde perjudica menos de lo que se cree** (Haltman, 2025).
 7. **Desconfianza hacia lo patrocinado.** → Cada idea explica por qué acierta en vez de empujar
    un producto concreto.
